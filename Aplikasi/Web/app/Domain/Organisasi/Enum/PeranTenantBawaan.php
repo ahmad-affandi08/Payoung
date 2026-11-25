@@ -218,6 +218,8 @@ enum PeranTenantBawaan: string
                 IzinTenant::InvoiceKelola,
                 IzinTenant::PelangganLihat,
                 IzinTenant::KaryawanLihat,
+                // D-327: Akuntan membayar rekap gaji dan mencatat kasbon (jurnalnya bagian pembukuan).
+                IzinTenant::KaryawanGajiKelola,
                 IzinTenant::TindakanTinjau,
             ],
         };

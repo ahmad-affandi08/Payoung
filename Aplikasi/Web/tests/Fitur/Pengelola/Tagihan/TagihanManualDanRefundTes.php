@@ -17,12 +17,15 @@ use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusRefundLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Model\Addon;
 use App\Domain\Tenant\Model\AtribusiMitra;
 use App\Domain\Tenant\Model\KomisiMitra;
 use App\Domain\Tenant\Model\KuponLangganan;
 use App\Domain\Tenant\Model\KuponLanggananPemakaian;
 use App\Domain\Tenant\Model\Langganan;
+use App\Domain\Tenant\Model\LanggananAddon;
 use App\Domain\Tenant\Model\Mitra;
+use App\Domain\Tenant\Model\Paket;
 use App\Domain\Tenant\Model\PembayaranLangganan;
 use App\Domain\Tenant\Model\RefundLangganan;
 use App\Domain\Tenant\Model\TagihanLangganan;
@@ -406,6 +409,43 @@ describe('Refund tagihan lunas (BR-P08.2)', function (): void {
         $langganan = Langganan::query()->where('IdTenant', $this->tenant->Id)->sole();
         expect(RefundLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $kedua->Id)->sole()->LayananDiakhiri)->toBeTrue()
             ->and($langganan->PeriodeSelesai?->equalTo($akhirPertama))->toBeTrue();
+    });
+
+    it('BR-P08.16: refund perpanjangan memangkas add-on yang ikut diperpanjang tagihan itu ke akhir periode sebelumnya', function (): void {
+        LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
+        $akhirPertama = Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->PeriodeSelesai;
+        $kedua = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
+        $akhirKedua = Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->PeriodeSelesai;
+        $addon = Addon::query()->where('Kode', 'TOKO_ONLINE')->firstOrFail();
+        LanggananAddon::query()->create([
+            'IdTenant' => $this->tenant->Id,
+            'IdAddon' => $addon->Id,
+            'Jumlah' => 1,
+            'MulaiPada' => now()->subDay(),
+            'SelesaiPada' => $akhirKedua,
+            'PerpanjangOtomatis' => true,
+            'IdTagihanLanggananAsal' => $kedua->Id,
+        ]);
+
+        MasukManual($this, $this->keuangan)->post(BantuanPengelola::Url("/tagihan/{$kedua->Uuid}/refund"), ['Alasan' => 'Perpanjangan salah bayar'])->assertSessionHasNoErrors();
+
+        $milik = LanggananAddon::query()->where('IdTenant', $this->tenant->Id)->sole();
+        expect($milik->SelesaiPada->equalTo($akhirPertama))->toBeTrue()
+            ->and(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->PeriodeSelesai?->equalTo($akhirPertama))->toBeTrue();
+    });
+
+    it('BR-P08.16: refund tagihan naik paket mengembalikan paket asal, kecuali sudah ada pembayaran paket lebih baru', function (): void {
+        $pertama = LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
+        $idStarter = Paket::query()->where('Kode', 'STARTER')->sole()->Id;
+        $idPro = Paket::query()->where('Kode', 'PRO')->sole()->Id;
+        // Tagihan pertama diperlakukan sebagai naik paket Starter → Pro.
+        TagihanLangganan::query()->withoutGlobalScopes()->whereKey($pertama->Id)->update(['Jenis' => JenisTagihanLangganan::NaikPaket->value, 'IdPaketAsal' => $idStarter]);
+        LunasiTagihanBiasaUji($this, $this->keuangan, $this->pemilik, $this->tenant);
+
+        // Perpanjangan paket Pro sudah lunas sesudahnya: refund naik paket hanya mengembalikan uang, paket tetap Pro.
+        MasukManual($this, $this->keuangan)->post(BantuanPengelola::Url("/tagihan/{$pertama->Uuid}/refund"), ['Alasan' => 'Koreksi naik paket'])->assertSessionHasNoErrors();
+        expect(RefundLangganan::query()->withoutGlobalScopes()->where('IdTagihanLangganan', $pertama->Id)->sole()->LayananDiakhiri)->toBeFalse()
+            ->and(Langganan::query()->where('IdTenant', $this->tenant->Id)->sole()->IdPaket)->toBe($idPro);
     });
 
     it('refund membatalkan komisi mitra yang masih tertunda atas tagihan itu (clawback BR-P12.1)', function (): void {

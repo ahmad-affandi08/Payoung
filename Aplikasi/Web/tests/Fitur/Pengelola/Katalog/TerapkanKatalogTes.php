@@ -210,6 +210,32 @@ describe('katalog:terapkan', function (): void {
         expect($versi)->toHaveCount(2)->and($versi[1]->HargaBulanan)->toBe('99000.00')->and($versi[1]->TerapkanKePelangganLama)->toBeTrue();
     });
 
+    it('dijalankan ulang di tengah promo dengan harga normal berubah: versi normal yang sudah dijadwalkan tidak diganti dan kunci harga promo tidak terbuka', function (): void {
+        $this->artisan('katalog:terapkan')->assertSuccessful();
+        $jumlah = HargaPaket::query()->count();
+        $katalog = json_decode((string) file_get_contents(database_path('Data/KatalogPaket.json')), true, flags: JSON_THROW_ON_ERROR);
+
+        foreach ($katalog['Paket'] as &$paket) {
+            if ($paket['Kode'] === 'STARTER') {
+                $paket['Harga']['HargaBulanan'] = '109000';
+                $paket['Harga']['HargaTahunan'] = '1046400';
+            }
+        }
+
+        unset($paket);
+        $berkas = tempnam(sys_get_temp_dir(), 'paket');
+        file_put_contents($berkas, json_encode($katalog));
+        $hasil = app(TerapkanKatalogBawaan::class)->Jalankan(pathPaket: $berkas);
+        unlink($berkas);
+
+        $versi = VersiTerbit('STARTER');
+        expect(array_filter($hasil['Harga'], fn (array $h): bool => $h['Paket'] === 'STARTER'))->toBe([])
+            ->and(HargaPaket::query()->count())->toBe($jumlah)
+            ->and($versi[1]->BerlakuSampai?->toDateString())->toBe('2027-01-31')
+            // Langganan yang mulai selama promo tetap di harga promo sesudah masa promo (BR-P04.1).
+            ->and(HargaTagihan('STARTER', '2027-03-01', '2026-11-01'))->toBe('59000.00');
+    });
+
     it('menyusul versi normal bila hanya promo yang sudah ada (jalankan ulang setelah sebagian)', function (): void {
         $this->artisan('katalog:terapkan')->assertSuccessful();
         $starter = Paket::query()->where('Kode', 'STARTER')->sole();

@@ -54,6 +54,7 @@ export const IzinTenant = {
     PersediaanTerbuangCatat: 'persediaan.terbuang.catat',
     KaryawanLihat: 'karyawan.lihat',
     KaryawanKelola: 'karyawan.kelola',
+    KaryawanGajiKelola: 'karyawan.gaji.kelola',
     // F-08 v2.06: gerbang pembayaran QRIS dinamis milik tenant (akun merchant sendiri).
     PembayaranGerbangAtur: 'pembayaran.gerbang.atur',
     // X7 Open API v1: token API publik (khusus Owner).

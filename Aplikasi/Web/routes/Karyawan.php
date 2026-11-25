@@ -57,8 +57,6 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
     Route::get('/komisi', [KomisiKontroler::class, 'Aturan'])->name('kelola.karyawan.komisi');
     Route::get('/komisi/laporan', [KomisiKontroler::class, 'Laporan'])->name('kelola.karyawan.komisi.laporan');
     Route::get('/komisi/laporan/ekspor', [KomisiKontroler::class, 'EksporLaporan'])->middleware(EksporDiLatarBelakang::class)->name('kelola.karyawan.komisi.laporan.ekspor');
-    // F-18 bagian 3: kasbon karyawan (J-18.1).
-    Route::get('/kasbon', [KasbonKontroler::class, 'Daftar'])->name('kelola.karyawan.kasbon');
     // F-18 EMP-03: cuti/izin/sakit karyawan (dicatat pengelola; cuti berbayar bukan "tidak masuk" di rekap gaji).
     Route::get('/cuti', [CutiKaryawanKontroler::class, 'Daftar'])->name('kelola.karyawan.cuti');
     // F-18 bagian 3: target penjualan & progres.
@@ -100,21 +98,25 @@ Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanLihat)])
         Route::post('/komisi/{aturan}/pulihkan', [KomisiKontroler::class, 'Pulihkan'])->where('aturan', $ulid)->name('kelola.karyawan.komisi.pulihkan');
         Route::post('/cuti', [CutiKaryawanKontroler::class, 'Simpan'])->middleware('throttle:60,1')->name('kelola.karyawan.cuti.simpan');
         Route::post('/cuti/{cuti}/batal', [CutiKaryawanKontroler::class, 'Batalkan'])->where('cuti', $ulid)->name('kelola.karyawan.cuti.batal');
-        Route::post('/kasbon', [KasbonKontroler::class, 'Simpan'])->middleware(['throttle:60,1', TolakKirimGanda::class])->name('kelola.karyawan.kasbon.simpan');
-        Route::post('/kasbon/{kasbon}/pelunasan', [KasbonKontroler::class, 'Lunasi'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.pelunasan');
-        Route::post('/kasbon/{kasbon}/batal', [KasbonKontroler::class, 'Batalkan'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.batal');
-        // F-18 bagian 3: rekap gaji bulanan (memuat gaji, jadi seluruhnya `karyawan.kelola`).
-        Route::get('/gaji', [RekapGajiKontroler::class, 'Daftar'])->name('kelola.karyawan.gaji');
-        Route::post('/gaji', [RekapGajiKontroler::class, 'Simpan'])->middleware('throttle:30,1')->name('kelola.karyawan.gaji.simpan');
-        Route::get('/gaji/{rekap}', [RekapGajiKontroler::class, 'Detail'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.detail');
-        Route::get('/gaji/{rekap}/ekspor', [RekapGajiKontroler::class, 'Ekspor'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.ekspor');
-        // v3.35: slip gaji per karyawan (cetak/PDF), `?karyawan=` untuk satu orang.
-        Route::get('/gaji/{rekap}/slip', [RekapGajiKontroler::class, 'Slip'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.slip');
-        Route::put('/gaji/{rekap}/baris/{karyawan}', [RekapGajiKontroler::class, 'UbahBaris'])->where(['rekap' => $ulid, 'karyawan' => $ulid])->name('kelola.karyawan.gaji.baris');
-        Route::post('/gaji/{rekap}/tambahan-massal', [RekapGajiKontroler::class, 'TambahanMassal'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.tambahan-massal');
-        Route::post('/gaji/{rekap}/bayar', [RekapGajiKontroler::class, 'Bayar'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.bayar');
         Route::put('/target', [TargetPenjualanKontroler::class, 'Simpan'])->name('kelola.karyawan.target.simpan');
         Route::delete('/target/{target}', [TargetPenjualanKontroler::class, 'Hapus'])->where('target', $ulid)->name('kelola.karyawan.target.hapus');
-        Route::delete('/gaji/{rekap}', [RekapGajiKontroler::class, 'Hapus'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.hapus');
     });
+});
+
+// D-327: gaji dan kasbon memegang uang seluruh usaha (data gaji semua karyawan, pembayaran dari kas/bank), jadi punya izin
+// sendiri `karyawan.gaji.kelola` (bawaan Pemilik, Admin, Akuntan) dan tidak ikut `karyawan.kelola` milik Manajer Outlet.
+Route::middleware([SiapkanAuditTenant::class, $izin(IzinTenant::KaryawanGajiKelola)])->prefix('karyawan')->group(function () use ($ulid): void {
+    Route::get('/kasbon', [KasbonKontroler::class, 'Daftar'])->name('kelola.karyawan.kasbon');
+    Route::post('/kasbon', [KasbonKontroler::class, 'Simpan'])->middleware(['throttle:60,1', TolakKirimGanda::class])->name('kelola.karyawan.kasbon.simpan');
+    Route::post('/kasbon/{kasbon}/pelunasan', [KasbonKontroler::class, 'Lunasi'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.pelunasan');
+    Route::post('/kasbon/{kasbon}/batal', [KasbonKontroler::class, 'Batalkan'])->where('kasbon', $ulid)->name('kelola.karyawan.kasbon.batal');
+    Route::get('/gaji', [RekapGajiKontroler::class, 'Daftar'])->name('kelola.karyawan.gaji');
+    Route::post('/gaji', [RekapGajiKontroler::class, 'Simpan'])->middleware('throttle:30,1')->name('kelola.karyawan.gaji.simpan');
+    Route::get('/gaji/{rekap}', [RekapGajiKontroler::class, 'Detail'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.detail');
+    Route::get('/gaji/{rekap}/ekspor', [RekapGajiKontroler::class, 'Ekspor'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.ekspor');
+    Route::get('/gaji/{rekap}/slip', [RekapGajiKontroler::class, 'Slip'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.slip');
+    Route::put('/gaji/{rekap}/baris/{karyawan}', [RekapGajiKontroler::class, 'UbahBaris'])->where(['rekap' => $ulid, 'karyawan' => $ulid])->name('kelola.karyawan.gaji.baris');
+    Route::post('/gaji/{rekap}/tambahan-massal', [RekapGajiKontroler::class, 'TambahanMassal'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.tambahan-massal');
+    Route::post('/gaji/{rekap}/bayar', [RekapGajiKontroler::class, 'Bayar'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.bayar');
+    Route::delete('/gaji/{rekap}', [RekapGajiKontroler::class, 'Hapus'])->where('rekap', $ulid)->name('kelola.karyawan.gaji.hapus');
 });

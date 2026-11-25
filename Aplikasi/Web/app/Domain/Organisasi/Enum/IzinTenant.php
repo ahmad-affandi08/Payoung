@@ -86,6 +86,9 @@ enum IzinTenant: string
     // F-18: karyawan, jadwal kerja, rekap absensi.
     case KaryawanLihat = 'karyawan.lihat';
     case KaryawanKelola = 'karyawan.kelola';
+    // D-327: rekap gaji, pembayaran gaji, dan kasbon karyawan (uang keluar dari kas/bank dan data gaji seluruh usaha).
+    // Terpisah dari karyawan.kelola supaya Manajer Outlet yang mengelola jadwal dan absensi tidak ikut memegang gaji.
+    case KaryawanGajiKelola = 'karyawan.gaji.kelola';
     // v2.00 mode Pelayan: mencatat pesanan meja & mengirim ke dapur tanpa berjualan/menerima pembayaran.
     case PesananMejaCatat = 'pesanan.meja.catat';
     // D-310: mengatur stasiun dapur/bar/checker tiap kategori dan menu langsung dari kasir (bawaan Kasir, Supervisor, Manajer).
@@ -191,6 +194,7 @@ enum IzinTenant: string
             self::PelangganSesiKelola => 'Mengembalikan atau menghanguskan sisa paket sesi pelanggan',
             self::KaryawanLihat => 'Melihat karyawan, jadwal kerja, dan rekap absensi',
             self::KaryawanKelola => 'Mengelola data karyawan dan jadwal kerja',
+            self::KaryawanGajiKelola => 'Melihat dan membayar rekap gaji serta mengelola kasbon karyawan semua outlet',
             self::PesananMejaCatat => 'Mencatat pesanan meja & mengirim ke dapur tanpa menerima pembayaran (Pelayan)',
             self::DapurRuteAtur => 'Mengatur stasiun dapur, bar, atau checker tiap kategori dan menu dari kasir',
             self::TindakanTinjau => 'Menandai transaksi yang perlu dicek sebagai sudah dicek (Kotak Tindakan)',
@@ -228,7 +232,7 @@ enum IzinTenant: string
             self::LanggananKelola, self::DataKelola => 'Langganan',
             self::BantuanTiketLihat, self::BantuanTiketKelola, self::DukunganAksesKelola => 'Bantuan',
             self::PelangganLihat, self::PelangganKelola, self::PelangganDepositKelola, self::PelangganSesiKelola => 'Pelanggan',
-            self::KaryawanLihat, self::KaryawanKelola => 'Karyawan',
+            self::KaryawanLihat, self::KaryawanKelola, self::KaryawanGajiKelola => 'Karyawan',
             self::ApotekObatKerasJual, self::ApotekResepLihat => 'Apotek',
         };
     }

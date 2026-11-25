@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Builder;
  *   jadwal. Periksa lalu koreksi jamnya bila perlu, atau tandai sudah dicek;
  * - **permintaan koreksi absensi** (Perhatian): karyawan yang gagal absen meminta manajer mencatat jamnya;
  * - **tukar shift menunggu keputusan** (Perhatian, izin `karyawan.kelola`, D-251): rekan sudah setuju, pengelola belum memutuskan;
- * - **rekap gaji mingguan siap dibuat** (Perhatian, izin `karyawan.kelola`, D-219): ada karyawan bergaji mingguan dan
+ * - **rekap gaji mingguan siap dibuat** (Perhatian, izin `karyawan.gaji.kelola`, D-219 dan D-327): ada karyawan bergaji mingguan dan
  *   tujuh hari sejak rekap mingguan terakhir sudah lewat.
  */
 final class PenyediaTindakanKehadiran implements PenyediaTindakan
@@ -42,7 +42,11 @@ final class PenyediaTindakanKehadiran implements PenyediaTindakan
 
     public function Kumpulkan(DataKonteksTindakan $konteks): array
     {
-        $gaji = $konteks->CekIzin('karyawan.kelola') ? [$this->ButirTukarShift($konteks), $this->ButirGajiMingguan()] : [];
+        // D-327: rekap gaji butuh izin gaji sendiri, tukar shift cukup `karyawan.kelola`.
+        $gaji = [
+            ...($konteks->CekIzin('karyawan.kelola') ? [$this->ButirTukarShift($konteks)] : []),
+            ...($konteks->CekIzin('karyawan.gaji.kelola') ? [$this->ButirGajiMingguan()] : []),
+        ];
 
         if (! $konteks->CekIzin('karyawan.lihat')) {
             return array_values(array_filter($gaji));

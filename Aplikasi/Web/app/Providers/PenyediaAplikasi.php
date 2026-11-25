@@ -308,8 +308,13 @@ final class PenyediaAplikasi extends ServiceProvider
         });
 
         // F-08: webhook gerbang pembayaran, per penyedia per IP (gerbang mengirim dari sedikit IP; ulangan dibatasi).
-        RateLimiter::for('webhook', static fn (Request $permintaan): Limit => Limit::perMinute(300)
-            ->by((string) $permintaan->route('penyedia').'|'.$permintaan->ip()));
+        // Kuota per token webhook (satu toko), bukan satu kuota bersama seluruh tenant: DOKU mengirim dari sedikit IP dan
+        // meminta token B2B ke URL yang sama sebelum tiap notifikasi, jadi satu kuota per IP menolak notifikasi sah di
+        // skala besar. Batas per IP tetap ada (lebih longgar) supaya tebakan token acak tidak lolos tanpa batas.
+        RateLimiter::for('webhook', static fn (Request $permintaan): array => [
+            Limit::perMinute(300)->by('token|'.(string) $permintaan->route('penyedia').'|'.(string) $permintaan->route('tokenWebhook').'|'.$permintaan->ip()),
+            Limit::perMinute(1200)->by('ip|'.$permintaan->ip()),
+        ]);
 
         // PGL-15: pesan masuk dukungan dari penyedia email/WhatsApp, per IP.
         RateLimiter::for('webhook-dukungan', static fn (Request $permintaan): Limit => Limit::perMinute(120)->by((string) $permintaan->ip()));

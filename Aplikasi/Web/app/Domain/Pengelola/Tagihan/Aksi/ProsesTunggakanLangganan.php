@@ -10,6 +10,8 @@ use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPembayaranLangganan;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Enum\StatusPermintaanTurunPaket;
+use App\Domain\Tenant\Model\PermintaanTurunPaket;
 use App\Domain\Tenant\Model\Langganan;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -150,6 +152,12 @@ final class ProsesTunggakanLangganan
                     return 0;
                 }
 
+                // Pemilik sudah meminta turun ke Gratis di akhir periode: `langganan:terapkan-turun-paket` yang memindahkannya.
+                // Tertunggak tidak bisa berpindah ke Gratis, jadi langganan itu tidak boleh didahului menjadi Tertunggak.
+                if ($tujuan === StatusLangganan::Tertunggak && $this->CekAdaPermintaanTurunKeGratis($langganan->IdTenant)) {
+                    return 0;
+                }
+
                 $langganan->update(['Status' => $tujuan]);
                 $this->audit->Catat(
                     'langganan.status.otomatis',
@@ -165,6 +173,16 @@ final class ProsesTunggakanLangganan
         }
 
         return $jumlah;
+    }
+
+    private function CekAdaPermintaanTurunKeGratis(int $idTenant): bool
+    {
+        return PermintaanTurunPaket::query()
+            ->withoutGlobalScopes()
+            ->where('IdTenant', $idTenant)
+            ->where('Status', StatusPermintaanTurunPaket::Menunggu->value)
+            ->whereHas('PaketTujuan', fn ($kueri) => $kueri->where('Kode', (string) config('tenant.KodePaketGratis')))
+            ->exists();
     }
 
     private function CekAdaPembayaranMenunggu(int $idTenant): bool

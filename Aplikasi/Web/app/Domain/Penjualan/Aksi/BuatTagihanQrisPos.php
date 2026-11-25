@@ -45,8 +45,13 @@ final class BuatTagihanQrisPos
 
     public const JUMLAH_MAKSIMAL = '100000000';
 
-    /** Cadangan tanpa isi QR lebih tua dari ini dianggap proses yang terputus dan boleh dibuat ulang. */
-    private const DETIK_CADANGAN_BASI = 60;
+    /**
+     * Cadangan tanpa isi QR lebih tua dari ini dianggap proses yang terputus (menjadi `TidakPasti`). Harus melewati waktu
+     * terburuk satu panggilan gerbang yang masih sah: token B2B 15 detik + pembuatan QR 20 detik, dua kali bila token
+     * ditolak sekali. Dengan 60 detik, kiriman ulang POS saat panggilan pertama masih berjalan menandai tagihan
+     * `TidakPasti` padahal QR-nya sebentar lagi tersimpan, dan tagihan itu tak bisa lagi dicek atau dibatalkan.
+     */
+    private const DETIK_CADANGAN_BASI = 100;
 
     public function __construct(
         private readonly KonteksTenant $konteks,

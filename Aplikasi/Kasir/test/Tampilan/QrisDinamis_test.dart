@@ -301,6 +301,41 @@ void main() {
     await Lepas(tester, u);
   });
 
+  testWidgets(
+    'QRIS dinamis: pembatalan gagal karena internet putus → kasir tidak terkunci, bisa menutup tanpa membatalkan',
+    (tester) async {
+      Map<String, Object?>? dibuat;
+      final u = await MasukJual(tester, const Size(1280, 900), (p) async {
+        if (p.url.path.endsWith('/batal')) {
+          throw http.ClientException('offline');
+        }
+        if (p.method == 'POST') {
+          dibuat = jsonDecode(p.body) as Map<String, Object?>;
+          return Tagihan(dibuat!);
+        }
+        return JsonUji({'Uuid': dibuat!['Uuid'], 'Status': 'Menunggu', 'LunasPada': null});
+      });
+      await BukaBayarQris(tester, const Size(1280, 900));
+
+      await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Batalkan QRIS'));
+      expect(find.textContaining('QRIS belum bisa dibatalkan'), findsOneWidget);
+      expect(find.byType(DialogQrisDinamis), findsOneWidget);
+
+      // Jalan keluar muncul sesudah pembatalan gagal; "Kembali" tidak menutup apa pun.
+      await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Tutup saja'));
+      expect(find.text('Tutup tanpa membatalkan?'), findsOneWidget);
+      await Ketuk(tester, find.widgetWithText(TextButton, 'Kembali'));
+      expect(find.byType(DialogQrisDinamis), findsOneWidget);
+
+      await Ketuk(tester, find.widgetWithText(OutlinedButton, 'Tutup saja'));
+      await Ketuk(tester, find.widgetWithText(FilledButton, 'Tutup'));
+      expect(find.byType(DialogQrisDinamis), findsNothing);
+      expect(find.byType(RuangKerja), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await Lepas(tester, u);
+    },
+  );
+
   testWidgets('QRIS dinamis offline → pesan jelas, tidak ada penjualan', (tester) async {
     final u = await MasukJual(tester, const Size(1280, 900), null);
     await BukaBayarQris(tester, const Size(1280, 900));

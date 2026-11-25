@@ -5,7 +5,7 @@ import '../../Data/LayarPelanggan/ModulQr.dart';
 
 /// Kode QR dari teks (QRIS dinamis, v2.05) digambar langsung di perangkat. Modul memakai token `teksUtama` di atas
 /// `permukaan` dengan zona tenang 4 modul agar mudah dipindai kamera ponsel/aplikasi bank.
-class GambarQr extends StatelessWidget {
+class GambarQr extends StatefulWidget {
   const GambarQr({super.key, required this.data, this.ukuran = 240, required this.label});
 
   final String data;
@@ -15,17 +15,34 @@ class GambarQr extends StatelessWidget {
   final String label;
 
   @override
+  State<GambarQr> createState() => _KeadaanGambarQr();
+}
+
+class _KeadaanGambarQr extends State<GambarQr> {
+  // Modul disusun sekali per teks: dialog QRIS membangun ulang tiap detik (hitung mundur), dan menyusun ulang QR di
+  // tiap bangun ulang memboroskan CPU perangkat murah serta membuat `shouldRepaint` selalu benar.
+  late List<List<bool>> _modul = SusunModulQr(widget.data);
+
+  @override
+  void didUpdateWidget(GambarQr lama) {
+    super.didUpdateWidget(lama);
+    if (lama.data != widget.data) {
+      _modul = SusunModulQr(widget.data);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final warna = TokenWarna.AmbilDari(context);
     return Semantics(
-      label: label,
+      label: widget.label,
       image: true,
       child: Container(
         color: warna.permukaan,
-        width: ukuran,
-        height: ukuran,
+        width: widget.ukuran,
+        height: widget.ukuran,
         child: CustomPaint(
-          painter: _PelukisQr(modul: SusunModulQr(data), warnaModul: warna.teksUtama),
+          painter: _PelukisQr(modul: _modul, warnaModul: warna.teksUtama),
         ),
       ),
     );

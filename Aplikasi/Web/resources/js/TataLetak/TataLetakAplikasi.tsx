@@ -545,7 +545,7 @@ const menuKaryawan: ItemMenu[] = [
     {
         label: 'Kasbon',
         href: '/kelola/karyawan/kasbon',
-        izin: IzinTenant.KaryawanLihat,
+        izin: IzinTenant.KaryawanGajiKelola,
         lanjutan: true,
         kelompok: 'Gaji & insentif',
     },
@@ -560,7 +560,7 @@ const menuKaryawan: ItemMenu[] = [
     {
         label: 'Rekap gaji',
         href: '/kelola/karyawan/gaji',
-        izin: IzinTenant.KaryawanKelola,
+        izin: IzinTenant.KaryawanGajiKelola,
         kelompok: 'Gaji & insentif',
     },
     // D-253: izin tiap peran, bertetangga dengan Daftar tim dan Log audit.

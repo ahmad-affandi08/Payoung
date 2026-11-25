@@ -26,9 +26,10 @@ use Carbon\CarbonImmutable;
  *
  * Aturan layanan per jenis tagihan (hanya bila tagihan itu masih yang menentukan keadaan langganan sekarang):
  * - Add-on: add-on yang dibelinya berakhir saat ini.
- * - Naik paket: paket langganan kembali ke paket asal.
- * - Perpanjangan: akhir periode kembali ke akhir periode sebelumnya (awal periode tagihan itu). Aktivasi: layanan
- *   berakhir saat ini. Bila ada pembayaran lebih baru yang sudah memperpanjang periode, layanan dibiarkan dan refund
+ * - Naik paket: paket langganan kembali ke paket asal, kecuali sudah ada tagihan paket lain yang lunas sesudahnya
+ *   (perpanjangan paket baru): paket itu sudah dibayar, jadi refund hanya mencatat uang kembali.
+ * - Perpanjangan: akhir periode kembali ke akhir periode sebelumnya (awal periode tagihan itu), dan add-on yang ikut
+ *   diperpanjang tagihan itu dipangkas ke akhir yang sama. Aktivasi: layanan berakhir saat ini. Bila ada pembayaran lebih baru yang sudah memperpanjang periode, layanan dibiarkan dan refund
  *   hanya mencatat uang kembali.
  * Pengembalian uangnya sendiri dilakukan Keuangan di luar sistem; `CatatanPengembalian` menyimpan referensinya.
  */
@@ -74,7 +75,7 @@ final class PelaksanaRefundLangganan
         }
 
         if ($tagihan->Jenis === JenisTagihanLangganan::NaikPaket) {
-            if ($tagihan->IdPaketAsal === null || $langganan->IdPaket !== $tagihan->IdPaket) {
+            if ($tagihan->IdPaketAsal === null || $langganan->IdPaket !== $tagihan->IdPaket || $this->CekAdaPembayaranPaketLebihBaru($tagihan)) {
                 return false;
             }
 
@@ -99,7 +100,45 @@ final class PelaksanaRefundLangganan
             : $sekarang;
         // BR-P04.4: perpanjangan ke paket lebih murah (turun paket) yang dikembalikan juga mengembalikan paket sebelumnya.
         $langganan->update(['PeriodeSelesai' => $akhirBaru] + ($tagihan->Jenis === JenisTagihanLangganan::Perpanjangan && $tagihan->IdPaketAsal !== null ? ['IdPaket' => $tagihan->IdPaketAsal] : []));
+        $this->PangkasAddonTagihan($tagihan, $akhirBaru, $sekarang);
 
         return true;
+    }
+
+    /**
+     * BR-P08.16: ada tagihan paket (aktivasi, naik paket, perpanjangan) yang lunas sesudah tagihan ini berarti paket sekarang
+     * dibayar oleh tagihan itu. Refund tagihan lama hanya mengembalikan uang, tidak menurunkan paket yang sudah dibayar penuh.
+     */
+    private function CekAdaPembayaranPaketLebihBaru(TagihanLangganan $tagihan): bool
+    {
+        if ($tagihan->DibayarPada === null) {
+            return false;
+        }
+
+        return TagihanLangganan::query()
+            ->where('IdTenant', $tagihan->IdTenant)
+            ->whereKeyNot($tagihan->Id)
+            ->where('Status', StatusTagihanLangganan::Lunas->value)
+            ->where('Jenis', '!=', JenisTagihanLangganan::Addon->value)
+            ->where('DibayarPada', '>', $tagihan->DibayarPada)
+            ->exists();
+    }
+
+    /**
+     * Add-on yang diperpanjang oleh tagihan ini (ikut ditagih di perpanjangan) berakhir bersama periode yang dibatalkan,
+     * bukan tetap aktif sampai akhir periode yang uangnya sudah dikembalikan.
+     */
+    private function PangkasAddonTagihan(TagihanLangganan $tagihan, CarbonImmutable $akhirBaru, CarbonImmutable $sekarang): void
+    {
+        foreach (LanggananAddon::query()->where('IdTenant', $tagihan->IdTenant)->where('IdTagihanLanggananAsal', $tagihan->Id)->get() as $milik) {
+            if (! $milik->SelesaiPada->greaterThan($akhirBaru)) {
+                continue;
+            }
+
+            $milik->update(
+                ['SelesaiPada' => $akhirBaru]
+                + (! $akhirBaru->greaterThan($sekarang) ? ['PerpanjangOtomatis' => false, 'BerhentiPada' => $sekarang] : []),
+            );
+        }
     }
 }

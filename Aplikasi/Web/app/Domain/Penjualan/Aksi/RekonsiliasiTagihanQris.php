@@ -9,6 +9,7 @@ use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
+use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use App\Domain\Penjualan\Layanan\PenerapStatusTagihanQris;
 use App\Domain\Penjualan\Model\TagihanQris;
 use Carbon\CarbonImmutable;
@@ -23,6 +24,9 @@ use Carbon\CarbonImmutable;
  */
 final class RekonsiliasiTagihanQris
 {
+    /** Lama menunggu penjualan sebelum uang QRIS lunas tanpa penjualan dianggap perlu ditinjau (outbox kasir bisa tertunda). */
+    public const MENIT_TUNGGU_PENJUALAN = 120;
+
     public function __construct(
         private readonly PembuatGerbangPembayaran $pembuatGerbang,
         private readonly PenerapStatusTagihanQris $penerap,
@@ -65,7 +69,31 @@ final class RekonsiliasiTagihanQris
             $berubah += $this->penerap->TandaiKedaluwarsa($tagihan->Id)->Status === StatusTagihanQris::Kedaluwarsa ? 1 : 0;
         }
 
+        $this->TandaiLunasTanpaPenjualan();
+
         return $berubah;
+    }
+
+    /**
+     * Uang QRIS POS yang sudah lunas tepat waktu tetapi penjualannya tak kunjung diterima server (aplikasi ditutup,
+     * keranjang dibuang, outbox macet) tidak ditandai tinjauan oleh siapa pun: lunasnya normal. Sesudah
+     * `MENIT_TUNGGU_PENJUALAN` ia ditandai `PerluTinjauan` supaya muncul di Kotak Tindakan dan bisa ditutup (dikembalikan
+     * atau diakui pendapatan lain). Bila penjualannya datang belakangan, penautan tetap berjalan dan butir itu hilang.
+     */
+    private function TandaiLunasTanpaPenjualan(): void
+    {
+        TagihanQris::query()
+            ->where('Status', StatusTagihanQris::Lunas->value)
+            ->where('Sumber', SumberTagihanQris::Pos->value)
+            ->whereNull('UuidPenjualan')
+            ->where('PerluTinjauan', false)
+            ->whereNull('DitutupPada')
+            ->where('LunasPada', '<=', CarbonImmutable::now()->subMinutes(self::MENIT_TUNGGU_PENJUALAN))
+            ->update([
+                'PerluTinjauan' => true,
+                'AlasanTinjauan' => 'Uang QRIS sudah masuk tetapi penjualannya belum diterima server. Periksa apakah transaksinya masih tertunda di perangkat kasir.',
+                'DiubahPada' => now(),
+            ]);
     }
 
     private function TanyaGerbang(TagihanQris $tagihan): ?StatusPembayaranGerbang

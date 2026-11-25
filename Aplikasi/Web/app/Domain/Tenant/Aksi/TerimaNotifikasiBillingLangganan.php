@@ -136,6 +136,15 @@ final class TerimaNotifikasiBillingLangganan
             return true;
         }
 
+        // Pembayaran kedua yang lunas untuk tagihan yang sudah lunas atau ditutup lewat pembayaran lain (mis. pemilik menekan
+        // Bayar dua kali dan keduanya dibayar). Dulu `Lunasi` menolaknya dan pembayaran ini tinggal `Menunggu` selamanya tanpa
+        // jejak (dan menahan penangguhan otomatis). Kini ditutup dan dicatat supaya Keuangan bisa mengembalikan uangnya.
+        if (! $tagihan->Status->CekTerbuka()) {
+            $this->TutupLunasTakTerpakai($pembayaran, $tagihan, $notifikasi);
+
+            return true;
+        }
+
         if ($langganan === null) {
             throw new PelanggaranAturanBisnis('LanggananTidakAda', 'Langganan tenant ini tidak ditemukan.');
         }
@@ -169,6 +178,35 @@ final class TerimaNotifikasiBillingLangganan
         $this->BeritahuOwner($pembayaran, $tagihan);
 
         return true;
+    }
+
+    private function TutupLunasTakTerpakai(PembayaranLangganan $pembayaran, TagihanLangganan $tagihan, NotifikasiBilling $notifikasi): void
+    {
+        $pembayaran->update([
+            'Status' => StatusPembayaranLangganan::Ditolak,
+            'AlasanTolak' => "Tagihan {$tagihan->Nomor} sudah {$tagihan->Status->AmbilLabel()}. Pembayaran ini tidak dipakai dan uangnya perlu dikembalikan.",
+        ]);
+        Log::error('Pembayaran gerbang lunas masuk untuk tagihan yang sudah tidak terbuka. Uang perlu dikembalikan.', [
+            'NomorPesanan' => $notifikasi->nomorPesanan,
+            'IdTenant' => $pembayaran->IdTenant,
+            'NomorTagihan' => $tagihan->Nomor,
+            'StatusTagihan' => $tagihan->Status->value,
+            'Jumlah' => $notifikasi->jumlah,
+            'IdTransaksiGerbang' => $notifikasi->idTransaksi,
+        ]);
+        $this->audit->Catat(
+            'langganan.pembayaran-gerbang-lunas-tak-terpakai',
+            $pembayaran,
+            nilaiLama: ['Pembayaran' => StatusPembayaranLangganan::Menunggu->value],
+            nilaiBaru: [
+                'Pembayaran' => StatusPembayaranLangganan::Ditolak->value,
+                'NomorTagihan' => $tagihan->Nomor,
+                'StatusTagihan' => $tagihan->Status->value,
+                'JumlahDiterimaGerbang' => $notifikasi->jumlah,
+                'IdTransaksiGerbang' => $notifikasi->idTransaksi,
+            ],
+            idTenant: $pembayaran->IdTenant,
+        );
     }
 
     /**

@@ -105,6 +105,19 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
                 '/kelola/akuntansi/qris-tanpa-penjualan?saring[Penutupan]=Terbuka',
                 fn (TagihanQris $t): DataRincianTindakan => new DataRincianTindakan($t->Uuid, $t->NomorPesanan, $t->AlasanTinjauan, $t->LunasPada?->setTimezone('Asia/Jakarta')->toDateString(), '/kelola/akuntansi/qris-tanpa-penjualan?cari='.$t->Uuid),
             );
+            // Pembayaran QRIS tambahan atas pesanan online (sudah dibayar, atau uang mukanya sudah dikembalikan) dibukukan sebagai
+            // uang muka tambahan dan ditandai tinjauan. Tanpa butir ini uang itu tercatat sebagai kewajiban tanpa ada yang tahu.
+            $butir[] = PembuatButirTinjauan::Buat(
+                $this->KueriTagihanQrisOnline($konteks->idOutletBoleh),
+                'TagihanQris',
+                'TagihanQris',
+                'tagihan-qris.tinjauan-online',
+                'Penjualan',
+                'Uang QRIS tambahan di pesanan online',
+                'Pelanggan membayar QRIS lagi atas pesanan online yang sudah dibayar atau uang mukanya sudah dikembalikan. Kembalikan kelebihannya lewat dasbor gerbang pembayaran, lalu tandai sudah dicek.',
+                '/kelola/toko-online',
+                fn (TagihanQris $t): DataRincianTindakan => new DataRincianTindakan($t->Uuid, $t->NomorPesanan, $t->AlasanTinjauan, $t->LunasPada?->setTimezone('Asia/Jakarta')->toDateString(), '/kelola/toko-online'),
+            );
             $butirRefund = $this->ButirUangMukaOnlineBelumKembali($konteks->idOutletBoleh);
 
             if ($butirRefund !== null) {
@@ -317,7 +330,8 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
             'Penjualan' => PembuatButirTinjauan::Saring($this->KueriPenjualan(null), 'Penjualan', $uuid),
             'ReturPenjualan' => PembuatButirTinjauan::Saring($this->KueriRetur(null), 'ReturPenjualan', $uuid),
             'IsiDeposit' => PembuatButirTinjauan::Saring($this->KueriIsiDeposit(null), 'IsiDeposit', $uuid),
-            'TagihanQris' => PembuatButirTinjauan::Saring($this->KueriTagihanQris(null), 'TagihanQris', $uuid),
+            // Dua butir memakai jenis dokumen yang sama (QRIS POS tanpa penjualan dan QRIS tambahan pesanan online).
+            'TagihanQris' => PembuatButirTinjauan::Saring(TagihanQris::query()->where('TagihanQris.PerluTinjauan', true)->whereNull('TagihanQris.UuidPenjualan'), 'TagihanQris', $uuid),
             default => [],
         };
     }
@@ -347,6 +361,16 @@ final class PenyediaTindakanPenjualan implements PenyediaTindakan
     private function KueriTagihanQris(?array $idOutlet): Builder
     {
         return TagihanQris::query()->where('TagihanQris.PerluTinjauan', true)->whereNull('TagihanQris.UuidPenjualan')->where('TagihanQris.Sumber', SumberTagihanQris::Pos->value)
+            ->when($idOutlet !== null, fn ($k) => $k->whereIn('TagihanQris.IdOutlet', $idOutlet));
+    }
+
+    /**
+     * @param  list<int>|null  $idOutlet
+     * @return Builder<TagihanQris>
+     */
+    private function KueriTagihanQrisOnline(?array $idOutlet): Builder
+    {
+        return TagihanQris::query()->where('TagihanQris.PerluTinjauan', true)->where('TagihanQris.Sumber', '!=', SumberTagihanQris::Pos->value)
             ->when($idOutlet !== null, fn ($k) => $k->whereIn('TagihanQris.IdOutlet', $idOutlet));
     }
 

@@ -64,7 +64,10 @@ final class RekonsiliasiPembayaranGerbangLangganan
             ->whereNotNull('RefGateway')
             ->where('DibuatPada', '<=', CarbonImmutable::now()->subMinutes(self::MENIT_TUNGGU_WEBHOOK))
             ->where('DibuatPada', '>=', CarbonImmutable::now()->subDays(self::HARI_JENDELA))
-            ->orderBy('DibuatPada')
+            // Terbaru dulu: pembayaran lama yang tak kunjung selesai (jawaban 4xx gerbang, selisih jumlah) tidak boleh memenuhi
+            // seluruh jatah putaran dan menyingkirkan pembayaran baru yang notifikasinya hilang. Yang lama tetap dijangkau
+            // putaran arsip harian dan tombol Cek lagi.
+            ->orderByDesc('DibuatPada')
             ->limit(self::BATAS_PER_PUTARAN)
             ->get(['Id', 'IdTenant', 'RefGateway', 'DibuatPada', 'Jumlah', 'MetodeBayar', 'RincianBayar', 'KedaluwarsaPada']);
 

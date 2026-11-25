@@ -128,9 +128,16 @@ final class TerapkanKatalogBawaan
             $akhirPromo = $promo === null ? null : Carbon::parse(SiapkanKatalogBawaan::AmbilTeks($promo, 'BerlakuSampai'), 'Asia/Jakarta')->startOfDay();
             $mulaiPromo = $hariIni->copy();
             $versiTerakhir = $terbit->first();
+            // Awal promo hanya digeser oleh versi yang mulai sebelum promo berakhir. Versi harga normal yang sudah dijadwalkan
+            // sesudah promo (mulai sehari setelah promo berakhir) bukan bagian promo: bila ikut dihitung, menjalankan ulang
+            // perintah di tengah promo menggeser awal promo melewati akhirnya, promo dilewati, dan harga normal terbit lagi
+            // sebagai versi untuk pelanggan lama yang membuka kunci harga promo seluruh tenant.
+            $versiDalamPromo = $akhirPromo === null
+                ? $versiTerakhir
+                : $terbit->first(fn (HargaPaket $versi): bool => $versi->BerlakuMulai->toDateString() <= $akhirPromo->toDateString());
 
-            if ($versiTerakhir !== null && $versiTerakhir->BerlakuMulai->greaterThanOrEqualTo($mulaiPromo)) {
-                $mulaiPromo = Carbon::parse($versiTerakhir->BerlakuMulai->toDateString(), 'Asia/Jakarta')->addDay();
+            if ($versiDalamPromo !== null && $versiDalamPromo->BerlakuMulai->greaterThanOrEqualTo($mulaiPromo)) {
+                $mulaiPromo = Carbon::parse($versiDalamPromo->BerlakuMulai->toDateString(), 'Asia/Jakarta')->addDay();
             }
 
             if ($promo !== null && $akhirPromo !== null && $mulaiPromo->lessThanOrEqualTo($akhirPromo)) {
@@ -149,7 +156,11 @@ final class TerapkanKatalogBawaan
                 }
 
                 // Harga normal terbit sehari setelah promo; langganan yang dimulai sebelumnya tetap di harga promo (BR-P04.1).
-                if (! $adaNormal) {
+                // Versi terbit tidak pernah diubah (BR-P04.5): bila sudah ada versi bertanggal sama dengan harga lain, perubahan
+                // harga normal masuk lewat alur usulan di konsol, bukan perintah ini.
+                $adaVersiTanggalNormal = $terbit->contains(fn (HargaPaket $versi): bool => $versi->BerlakuMulai->toDateString() === $mulaiNormal->toDateString());
+
+                if (! $adaNormal && ! $adaVersiTanggalNormal) {
                     $rencana[] = ['Jenis' => 'normal', 'Bulanan' => $normalBulanan, 'Tahunan' => $normalTahunan, 'Mulai' => $mulaiNormal, 'Sampai' => null, 'Lama' => false];
                 }
             } elseif ($versiTerakhir === null || ! ($versiTerakhir->AmbilHargaBulanan()->SamaDengan($normalBulanan) && $versiTerakhir->AmbilHargaTahunan()->SamaDengan($normalTahunan))) {

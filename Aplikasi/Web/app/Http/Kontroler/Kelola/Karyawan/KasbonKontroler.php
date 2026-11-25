@@ -22,8 +22,8 @@ use Illuminate\Http\Request;
 use Inertia\Response;
 
 /**
- * Kasbon karyawan (F-18 bagian 3, `/kelola/karyawan/kasbon`): lihat `karyawan.lihat`; catat, pelunasan ke kas/bank, dan
- * batal `karyawan.kelola`.
+ * Kasbon karyawan (F-18 bagian 3, `/kelola/karyawan/kasbon`): seluruhnya `karyawan.gaji.kelola` (D-327), karena mengeluarkan
+ * uang dari kas/bank untuk karyawan mana pun.
  */
 final class KasbonKontroler extends DasarKelolaKontroler
 {
@@ -37,7 +37,7 @@ final class KasbonKontroler extends DasarKelolaKontroler
             'TotalSisa' => $daftar->HitungTotalSisa(),
             'OpsiKaryawan' => $karyawan->AmbilPilihan(),
             'OpsiAkunKasBank' => array_map(fn (array $a): array => ['Uuid' => $a['Uuid'], 'Nama' => $a['Kode'].' '.$a['Nama']], $akun->AmbilKasBank()),
-            'Izin' => ['Kelola' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanKelola)],
+            'Izin' => ['Kelola' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::KaryawanGajiKelola)],
         ]);
     }
 

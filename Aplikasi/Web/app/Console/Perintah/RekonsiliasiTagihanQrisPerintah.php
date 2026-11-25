@@ -9,6 +9,7 @@ use App\Domain\Pengelola\Tenant\Layanan\KonteksPengelola;
 use App\Domain\Penjualan\Aksi\CekStatusTagihanQrisPos;
 use App\Domain\Penjualan\Aksi\RekonsiliasiTagihanQris;
 use App\Domain\Penjualan\Enum\StatusTagihanQris;
+use App\Domain\Penjualan\Enum\SumberTagihanQris;
 use App\Domain\Penjualan\Model\TagihanQris;
 use Illuminate\Console\Command;
 
@@ -31,7 +32,7 @@ final class RekonsiliasiTagihanQrisPerintah extends Command
             // Hanya tenant yang punya tagihan tidak pasti atau menunggu yang sudah lewat batas (audit kinerja skala besar).
             $batas = now()->subMinutes(CekStatusTagihanQrisPos::MENIT_TENGGANG);
 
-            foreach ($pengelola->IdTenantDenganPekerjaan(TagihanQris::class, fn ($q) => $q->where(fn ($w) => $w->where('Status', StatusTagihanQris::TidakPasti->value)->orWhere(fn ($m) => $m->where('Status', StatusTagihanQris::Menunggu->value)->where('KedaluwarsaPada', '<', $batas)))) as $idTenant) {
+            foreach ($pengelola->IdTenantDenganPekerjaan(TagihanQris::class, fn ($q) => $q->where(fn ($w) => $w->where('Status', StatusTagihanQris::TidakPasti->value)->orWhere(fn ($m) => $m->where('Status', StatusTagihanQris::Menunggu->value)->where('KedaluwarsaPada', '<', $batas))->orWhere(fn ($l) => $l->where('Status', StatusTagihanQris::Lunas->value)->where('Sumber', SumberTagihanQris::Pos->value)->whereNull('UuidPenjualan')->where('PerluTinjauan', false)->whereNull('DitutupPada')->where('LunasPada', '<=', now()->subMinutes(RekonsiliasiTagihanQris::MENIT_TUNGGU_PENJUALAN))))) as $idTenant) {
                 $konteks->Atur($idTenant);
                 $berubah += $rekonsiliasi->Jalankan();
             }

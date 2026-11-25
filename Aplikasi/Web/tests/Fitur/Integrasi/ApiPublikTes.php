@@ -7,6 +7,8 @@ use App\Domain\Bersama\Nilai\Kuantitas;
 use App\Domain\Integrasi\ApiPublik\Model\TokenApiTenant;
 use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Organisasi\Enum\PeranTenantBawaan;
+use App\Domain\Organisasi\Enum\StatusKeanggotaan;
+use App\Domain\Organisasi\Model\TenantPengguna;
 use App\Domain\Pengelola\TimInternal\Enum\PeranPengelolaBawaan;
 use App\Domain\Persediaan\Aksi\SimpanPenyesuaianStok;
 use App\Domain\Persediaan\Data\DataBarisDokumenStok;
@@ -130,6 +132,19 @@ it('token membaca produk & stok dengan kursor, tanpa cakupan 403. Token tenant l
     $palsu = preg_replace('/^payoung_\d+_/', "payoung_{$k['Tenant']->Id}_", $tokenLain);
     $this->withToken((string) $palsu)->getJson('/api/v1/produk')->assertUnauthorized();
     expect(collect($api('/api/v1/produk', $tokenLain)->json('Data'))->pluck('Nama'))->not->toContain('Beras Pandan Wangi Karung 5 kg');
+});
+
+it('token berhenti berlaku bila pembuatnya tidak lagi anggota aktif usaha (D-327)', function (): void {
+    $k = BantuanPenjualan::Siapkan($this, 'Toko Token Pembuat Nonaktif');
+    AktifkanApiPublik($k['Tenant']);
+    BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id, 'Minyak Goreng Curah 1 L', '10', '12000', '15000.00');
+    $token = BuatTokenUji($this, $k, ['produk:baca']);
+
+    $this->withToken($token)->getJson('/api/v1/produk')->assertOk();
+
+    TenantPengguna::query()->where('IdTenant', $k['Tenant']->Id)->where('IdPengguna', $k['Pemilik']->Id)->update(['Status' => StatusKeanggotaan::Nonaktif->value]);
+
+    $this->withToken($token)->getJson('/api/v1/produk')->assertUnauthorized()->assertJsonPath('Galat.Kode', 'TokenApiTidakValid');
 });
 
 it('penjualan per rentang tanggal dengan baris & pembayaran. Rentang tidak valid 422. Dicabut & kedaluwarsa 401', function (): void {

@@ -48,6 +48,33 @@ function SaldoAkunGaji(int $idAkun): string
 }
 
 describe('F-18 bagian 3 rekap gaji', function (): void {
+    it('D-327: gaji dan kasbon butuh izin karyawan.gaji.kelola: Manajer Outlet ditolak, Pemilik, Admin, dan Akuntan boleh', function (): void {
+        $k = BantuanPenjualan::Siapkan($this, 'Salon Izin Gaji');
+        $alamat = ['/kelola/karyawan/gaji', '/kelola/karyawan/kasbon'];
+
+        $manajer = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::ManajerOutlet, semuaOutlet: false);
+
+        foreach ($alamat as $a) {
+            BantuanOrganisasi::Masuk($this, $manajer, $k['Tenant']->Id)->get($a)->assertForbidden();
+        }
+
+        BantuanOrganisasi::Masuk($this, $manajer, $k['Tenant']->Id)->post('/kelola/karyawan/kasbon', [])->assertForbidden();
+        // Manajer Outlet tetap mengelola jadwal dan absensi (karyawan.kelola), hanya gaji yang tertutup.
+        BantuanOrganisasi::Masuk($this, $manajer, $k['Tenant']->Id)->get('/kelola/karyawan/jadwal')->assertOk();
+
+        foreach ([PeranTenantBawaan::Admin, PeranTenantBawaan::Akuntan] as $peran) {
+            $anggota = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, $peran);
+
+            foreach ($alamat as $a) {
+                BantuanOrganisasi::Masuk($this, $anggota, $k['Tenant']->Id)->get($a)->assertOk();
+            }
+        }
+
+        foreach ($alamat as $a) {
+            BantuanOrganisasi::Masuk($this, $k['Pemilik'], $k['Tenant']->Id)->get($a)->assertOk();
+        }
+    });
+
     it('buat draf → ubah baris → bayar: jurnal seimbang, kasbon terlama dipotong dulu, lalu append-only', function (): void {
         $k = BantuanPenjualan::Siapkan($this, 'Salon Cantik Gaji');
         $produk = BantuanPenjualan::BuatProdukBerstok($k['Gudang'], $k['Pemilik']->Id);

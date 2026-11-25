@@ -49,6 +49,9 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
   bool _mengecekManual = false;
   bool _membuat = false;
 
+  /// Pembatalan di server gagal (mis. internet putus): kasir diberi jalan keluar, tidak terkunci di dialog ini.
+  bool _batalGagal = false;
+
   /// Dialog hanya boleh ditutup sekali: status lunas dan jawaban batal bisa tiba berbarengan, dan `pop` kedua akan
   /// membuang rute di bawah dialog (layar Jual), bukan dialog ini.
   bool _sudahTutup = false;
@@ -202,8 +205,38 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
       }
       setState(() {
         _membatalkan = false;
+        _batalGagal = true;
         _galat = 'QRIS belum bisa dibatalkan: ${galat.pesan}';
       });
+    }
+  }
+
+  /// Jalan keluar saat pembatalan di server tidak bisa dilakukan: dialog ditutup tanpa membatalkan tagihan, sesudah kasir
+  /// diberi tahu akibatnya. Tagihan yatim kedaluwarsa sendiri, dan uang yang masuk sesudahnya muncul di Kotak Tindakan
+  /// (Uang QRIS tanpa penjualan) untuk dikembalikan atau diakui.
+  Future<void> _TutupTanpaMembatalkan() async {
+    final pilihan = await showDialog<String>(
+      context: context,
+      builder: (konteks) => AlertDialog(
+        title: const Text('Tutup tanpa membatalkan?'),
+        content: const Text(
+          'QRIS ini mungkin masih berlaku di server. Kalau pelanggan sudah membayar, uangnya akan muncul di '
+          'Kotak Tindakan sebagai Uang QRIS tanpa penjualan.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(konteks).pop('kembali'), child: const Text('Kembali')),
+          TextButton(onPressed: () => Navigator.of(konteks).pop('ulang'), child: const Text('Coba batalkan lagi')),
+          FilledButton(onPressed: () => Navigator.of(konteks).pop('tutup'), child: const Text('Tutup')),
+        ],
+      ),
+    );
+    if (!mounted) {
+      return;
+    }
+    if (pilihan == 'tutup') {
+      _Tutup(null);
+    } else if (pilihan == 'ulang') {
+      unawaited(_Batalkan());
     }
   }
 
@@ -327,8 +360,12 @@ class _DialogQrisDinamisState extends ConsumerState<DialogQrisDinamis> {
             ),
           );
     final tombolBatal = OutlinedButton(
-      onPressed: _membatalkan ? null : _Batalkan,
-      child: Text(_membatalkan ? 'Membatalkan…' : (tagihan == null || _selesaiTanpaBayar ? 'Tutup' : 'Batalkan QRIS')),
+      onPressed: _membatalkan ? null : (_batalGagal ? _TutupTanpaMembatalkan : _Batalkan),
+      child: Text(
+        _membatalkan
+            ? 'Membatalkan…'
+            : (_batalGagal ? 'Tutup saja' : (tagihan == null || _selesaiTanpaBayar ? 'Tutup' : 'Batalkan QRIS')),
+      ),
     );
     final Widget? tombolUtama = bisaUlang
         ? FilledButton(onPressed: _Buat, child: const Text('Buat QRIS lagi'))
