@@ -452,6 +452,33 @@ describe('F-08 QRIS dinamis: status, webhook, batal', function (): void {
         expect($this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$lain}")->json('Status'))->toBe('Kedaluwarsa');
     });
 
+    it('cek status dan rekonsiliasi memeriksa jumlah yang dilaporkan gerbang seperti webhook: jumlah berbeda tidak melunasi (tercatat), jumlah sama melunasi', function (): void {
+        $status = 'SUCCESS';
+        PalsukanDoku($status);
+        $k = SiapkanQrisDinamis($this);
+        $uuid = BuatQrisPos($this, $k, $k['QrisDinamis'])->assertCreated()->json('Uuid');
+        $cek = fn () => $this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$uuid}")->assertOk()->json('Status');
+
+        BantuanGerbangTenant::AturJumlahStatus('20000.00');
+
+        try {
+            expect($cek())->toBe('Menunggu');
+            BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+            expect(LogAudit::query()->where('Peristiwa', 'tagihan-qris.jumlah-berbeda')->count())->toBe(1);
+
+            // Rekonsiliasi terjadwal (tagihan lewat batas) menanyakan jumlah yang sama dan juga menolak.
+            TagihanQris::query()->update(['KedaluwarsaPada' => now()->subMinutes(30)]);
+            $this->artisan('penjualan:rekonsiliasi-qris')->assertSuccessful();
+            expect(TagihanQris::query()->sole()->Status)->not->toBe(StatusTagihanQris::Lunas);
+
+            BantuanGerbangTenant::AturJumlahStatus('38500.00');
+            $this->travel(6)->seconds();
+            expect($this->withToken($k['Token'])->getJson("/api/pos/v1/qris/{$uuid}")->assertOk()->json('Status'))->toBe('Lunas');
+        } finally {
+            BantuanGerbangTenant::AturJumlahStatus(null);
+        }
+    });
+
     it('webhook DOKU = pemicu yang ditanyakan balik ke DOKU, Lunas (idempoten). Isi tanpa nomor pesanan 400. Penyedia lain/yang sudah dihapus 404. Jumlah berbeda tidak melunasi (tercatat). Tagihan tak dikenal 200 Diterima false', function (): void {
         $status = 'PENDING';
         PalsukanDoku($status);

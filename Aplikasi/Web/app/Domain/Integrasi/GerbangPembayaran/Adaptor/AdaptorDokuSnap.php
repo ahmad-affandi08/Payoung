@@ -7,6 +7,7 @@ namespace App\Domain\Integrasi\GerbangPembayaran\Adaptor;
 use App\Domain\Bersama\Nilai\Uang;
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\HasilQris;
+use App\Domain\Integrasi\GerbangPembayaran\HasilStatusGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\HasilWebhook;
 use App\Domain\Integrasi\GerbangPembayaran\PermintaanQris;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
@@ -157,6 +158,13 @@ final class AdaptorDokuSnap extends AdaptorDasar
     public function CekStatus(string $nomorPesanan, string $idReferensi): StatusPembayaranGerbang
     {
         return $this->TanyaStatus($nomorPesanan, $idReferensi)['Status'];
+    }
+
+    public function CekStatusDenganJumlah(string $nomorPesanan, string $idReferensi): HasilStatusGerbang
+    {
+        $hasil = $this->TanyaStatus($nomorPesanan, $idReferensi);
+
+        return new HasilStatusGerbang($hasil['Status'], $hasil['Jumlah']);
     }
 
     /**

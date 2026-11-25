@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Penjualan\Aksi;
 
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
+use App\Domain\Integrasi\GerbangPembayaran\HasilStatusGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\StatusPembayaranGerbang;
@@ -39,10 +40,10 @@ final class RekonsiliasiTagihanQris
 
         foreach (TagihanQris::query()->where('Status', StatusTagihanQris::TidakPasti->value)->orderBy('Id')->limit(500)->get() as $tagihan) {
             TagihanQris::query()->whereKey($tagihan->Id)->increment('PercobaanRekonsiliasi', 1, ['TerakhirDicekPada' => now()]);
-            $status = $this->TanyaGerbang($tagihan);
+            $hasil = $this->TanyaGerbang($tagihan);
 
-            if ($status !== null && $status !== StatusPembayaranGerbang::Menunggu) {
-                $berubah += $this->penerap->Terapkan($tagihan->Id, $status, null, 'Rekonsiliasi gerbang')->Status !== StatusTagihanQris::TidakPasti ? 1 : 0;
+            if ($hasil !== null && $hasil->status !== StatusPembayaranGerbang::Menunggu) {
+                $berubah += $this->penerap->Terapkan($tagihan->Id, $hasil->status, $hasil->jumlah, 'Rekonsiliasi gerbang')->Status !== StatusTagihanQris::TidakPasti ? 1 : 0;
 
                 continue;
             }
@@ -58,10 +59,10 @@ final class RekonsiliasiTagihanQris
         // Gerbang ditanya lebih dulu: webhook lunas yang hilang (jaringan, server tenant sedang mati) tidak boleh membuat uang
         // yang sebenarnya sudah masuk tampak "kedaluwarsa" tanpa jurnal.
         foreach (TagihanQris::query()->where('Status', StatusTagihanQris::Menunggu->value)->where('KedaluwarsaPada', '<', $batas)->orderBy('Id')->limit(500)->get() as $tagihan) {
-            $status = $this->TanyaGerbang($tagihan);
+            $hasil = $this->TanyaGerbang($tagihan);
 
-            if ($status === StatusPembayaranGerbang::Lunas) {
-                $berubah += $this->penerap->Terapkan($tagihan->Id, $status, null, 'Rekonsiliasi gerbang')->Status === StatusTagihanQris::Lunas ? 1 : 0;
+            if ($hasil?->status === StatusPembayaranGerbang::Lunas) {
+                $berubah += $this->penerap->Terapkan($tagihan->Id, $hasil->status, $hasil->jumlah, 'Rekonsiliasi gerbang')->Status === StatusTagihanQris::Lunas ? 1 : 0;
 
                 continue;
             }
@@ -96,7 +97,7 @@ final class RekonsiliasiTagihanQris
             ]);
     }
 
-    private function TanyaGerbang(TagihanQris $tagihan): ?StatusPembayaranGerbang
+    private function TanyaGerbang(TagihanQris $tagihan): ?HasilStatusGerbang
     {
         $gerbang = $this->pembuatGerbang->AmbilUntukTagihan($tagihan->Penyedia);
 
@@ -105,7 +106,7 @@ final class RekonsiliasiTagihanQris
         }
 
         try {
-            return $gerbang->CekStatus($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
+            return $gerbang->CekStatusDenganJumlah($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
         } catch (GalatGerbang) {
             return null;
         }

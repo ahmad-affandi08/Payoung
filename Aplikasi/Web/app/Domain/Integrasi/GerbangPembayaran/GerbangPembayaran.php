@@ -25,6 +25,14 @@ interface GerbangPembayaran
     public function CekStatus(string $nomorPesanan, string $idReferensi): StatusPembayaranGerbang;
 
     /**
+     * Seperti `CekStatus`, tetapi memuat jumlah yang dilaporkan gerbang bila ada (dipakai penerap untuk menolak
+     * pelunasan yang nominalnya berbeda dari tagihan, sama seperti jalur webhook).
+     *
+     * @throws GalatGerbang
+     */
+    public function CekStatusDenganJumlah(string $nomorPesanan, string $idReferensi): HasilStatusGerbang;
+
+    /**
      * Audit P0 F-02: `CekStatus` cukup dengan `NomorPesanan` (tanpa `IdReferensi` dari gerbang), sehingga tagihan yang
      * hasil pembuatannya tidak pasti bisa direkonsiliasi.
      */

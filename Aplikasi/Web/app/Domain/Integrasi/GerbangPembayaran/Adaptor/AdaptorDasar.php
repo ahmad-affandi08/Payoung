@@ -7,6 +7,7 @@ namespace App\Domain\Integrasi\GerbangPembayaran\Adaptor;
 use App\Domain\Integrasi\GerbangPembayaran\GalatGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\GerbangPembayaran;
 use App\Domain\Integrasi\GerbangPembayaran\HasilRefund;
+use App\Domain\Integrasi\GerbangPembayaran\HasilStatusGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\KemampuanGerbang;
 use App\Domain\Integrasi\GerbangPembayaran\PermintaanRefund;
 use Illuminate\Http\Client\ConnectionException;
@@ -25,6 +26,12 @@ abstract class AdaptorDasar implements GerbangPembayaran
      * @param  array<string, string>  $kredensial
      */
     public function __construct(protected readonly array $pengaturan, protected readonly array $kredensial) {}
+
+    /** Bawaan: penyedia yang tidak melaporkan jumlah pada pertanyaan status. Adaptor yang bisa meniminya menimpa ini. */
+    public function CekStatusDenganJumlah(string $nomorPesanan, string $idReferensi): HasilStatusGerbang
+    {
+        return new HasilStatusGerbang($this->CekStatus($nomorPesanan, $idReferensi));
+    }
 
     protected function CekSandbox(): bool
     {

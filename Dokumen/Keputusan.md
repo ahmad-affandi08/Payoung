@@ -335,6 +335,7 @@
 | D-331 | Agent, 25/11/2026 (pemilik produk: "pada menu produksi, saat membuat produksi pastikan yang tampil hanya menu yang sesuai"): pemilih produk hasil di Order produksi disaring ke produk jenis Produksi tanpa nomor seri, sebagaimana v7.170. Ditafsirkan sebagai penyaringan pilihan hasil; bila maksudnya hal lain, dikoreksi pada perubahan berikutnya. |
 | D-332 | Agent, 25/11/2026 (pemilik produk: "gas kerjakan sesuai saran kamu, harus responsif, build lalu push ke main"): Langganan memakai kepala paket + tab (Langganan B) dan Tagihan memakai penunjuk perjalanan + dua kolom (Tagihan A), sebagaimana v7.171. Perubahan perilaku yang terlihat pengguna: halaman Langganan kini berisi tab, bukan satu halaman panjang, dan aksi Perpanjang ada di kepala halaman. |
 | D-333 | Agent, 25/11/2026 (pemilik produk: add-on WhatsApp masih tampil padahal WhatsApp belum diatur di konsol): add-on yang membuka fitur WhatsApp disembunyikan dan tidak bisa dibeli selama WhatsApp belum aktif di konsol, sebagaimana v7.172. Melengkapi D-299. |
+| D-334 | Agent, 25/11/2026 (sisa pemindaian bug D-326/D-327, butir polling QRIS tanpa pemeriksaan jumlah): pemeriksaan jumlah QRIS berlaku di semua jalur pelunasan, bukan hanya webhook, sebagaimana v7.173. Menambah metode colokan (kompatibel, bawaan di `AdaptorDasar`), bukan mengubah `CekStatus`. Melengkapi D-313 dan D-327. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

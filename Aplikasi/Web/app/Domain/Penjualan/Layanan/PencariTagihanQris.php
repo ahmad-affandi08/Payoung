@@ -68,13 +68,13 @@ final class PencariTagihanQris
         }
 
         try {
-            $status = $gerbang->CekStatus($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
+            $hasil = $gerbang->CekStatusDenganJumlah($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
         } catch (GalatGerbang) {
             return $tagihan->refresh();
         }
 
-        return $status === StatusPembayaranGerbang::Menunggu
+        return $hasil->status === StatusPembayaranGerbang::Menunggu
             ? $tagihan->refresh()
-            : $this->penerap->Terapkan($tagihan->Id, $status, null, 'Cek status gerbang');
+            : $this->penerap->Terapkan($tagihan->Id, $hasil->status, $hasil->jumlah, 'Cek status gerbang');
     }
 }

@@ -507,7 +507,7 @@ Hasil ukur di 390px (203 halaman). Beranda sudah dirombak (D-296). Sisanya **TER
 
 Temuan pemindaian 24 November sudah dikerjakan di v7.166, kecuali butir berikut. Semuanya bukan celah keamanan.
 
-1. **Polling dan rekonsiliasi QRIS melunasi tanpa memeriksa jumlah** (webhook memeriksanya). `GerbangPembayaran::CekStatus` hanya mengembalikan status, jadi memeriksa jumlah berarti mengubah kontrak colokan gerbang dan semua adaptornya. Sulit terjadi pada QRIS dinamis karena nominal tertanam di QR.
+1. ~~Polling dan rekonsiliasi QRIS melunasi tanpa memeriksa jumlah~~ selesai di v7.173 (D-334): `CekStatusDenganJumlah` di colokan gerbang, jumlah berbeda tidak melunasi dan tercatat.
 2. **Pembayaran QRIS tambahan atas pesanan online yang uang mukanya sudah dikembalikan** kini muncul di Kotak Tindakan, tetapi refund kelebihannya masih manual lewat dasbor gerbang (`KembalikanUangPesananOnline` menolak pesanan yang sudah dikembalikan, dan belum ada jurnal refund tambahan).
 3. ~~Tombol Bayar ganda di tagihan langganan~~ selesai di v7.167 (D-328): Checkout kedua dalam 20 detik ditolak.
 4. ~~Pengeluaran dari Aplikasi Owner tanpa Outlet~~ selesai di v7.169 (D-330) untuk aplikasi 1.0.3 ke atas. Versi lama sengaja tetap diterima tanpa outlet (kompatibilitas mundur); pemberlakuan untuk semua versi menunggu versi lama tidak dipakai.

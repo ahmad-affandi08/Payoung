@@ -87,10 +87,10 @@ final class TerimaNotifikasiQris
             throw new GalatGerbang('Status QRIS belum bisa dipastikan.', tidakPasti: true);
         }
 
-        $status = $gerbang->CekStatus($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
+        $hasil = $gerbang->CekStatusDenganJumlah($tagihan->NomorPesanan, (string) $tagihan->IdReferensi);
 
-        if ($status !== StatusPembayaranGerbang::Menunggu) {
-            $this->penerap->Terapkan($tagihan->Id, $status, null, "Webhook {$kodePenyedia}");
+        if ($hasil->status !== StatusPembayaranGerbang::Menunggu) {
+            $this->penerap->Terapkan($tagihan->Id, $hasil->status, $hasil->jumlah, "Webhook {$kodePenyedia}");
         }
 
         return true;

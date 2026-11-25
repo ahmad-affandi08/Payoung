@@ -40,6 +40,14 @@ final class BantuanGerbangTenant
     /** @var array{Status: string, Jumlah: string}|null */
     private static ?array $diumumkan = null;
 
+    /** Jumlah yang dilaporkan DOKU palsu pada jawaban status status SUCCESS di luar webhook (polling, rekonsiliasi). Null = tidak melaporkan. */
+    private static ?string $jumlahStatus = null;
+
+    public static function AturJumlahStatus(?string $jumlah): void
+    {
+        self::$jumlahStatus = $jumlah;
+    }
+
     /** @var array{Pribadi: string, Publik: string}|null */
     private static ?array $pasanganKunci = null;
 
@@ -125,7 +133,7 @@ final class BantuanGerbangTenant
      */
     public static function ResponsStatus(string $status): PromiseInterface
     {
-        $jumlah = null;
+        $jumlah = self::$jumlahStatus;
 
         if (self::$diumumkan !== null) {
             $status = self::$diumumkan['Status'];
