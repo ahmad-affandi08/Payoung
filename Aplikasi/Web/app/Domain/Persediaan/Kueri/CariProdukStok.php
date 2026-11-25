@@ -14,7 +14,7 @@ use App\Domain\Persediaan\Model\StokAwalDetail;
  * Pencarian produk berstok untuk form stok awal (tipe FE `HasilCariProdukStok['Data']`, DesainF05a C.6.6): produk
  * dari `InfoProdukStok::CariUntukStok` (berstok, bukan Konsinyasi, belum diarsipkan) ditambah, bila lokasi stok
  * disebut, `SaldoDiGudang` & `HppRataRata` dari SaldoStok dan `StokAwalSudahAda` (sudah ada stok awal Diposting di
- * lokasi itu). Tanpa lokasi ketiganya null/false. `hanyaKonsinyasi` = hanya barang titipan (dokumen konsinyasi F-05i).
+ * lokasi itu). Tanpa lokasi ketiganya null/false. `hanyaKonsinyasi` = hanya barang titipan (dokumen konsinyasi F-05i). `hanyaProduksi` = hanya produk hasil order produksi (D-331).
  */
 final class CariProdukStok
 {
@@ -23,9 +23,9 @@ final class CariProdukStok
     /**
      * @return list<array{Uuid: string, Nama: string, Sku: string|null, Jenis: string, Pelacakan: string, SimbolSatuan: string, BolehDesimal: bool, SaldoDiGudang: string|null, HppRataRata: string|null, StokAwalSudahAda: bool}>
      */
-    public function Cari(string $kata, ?int $idGudang, int $batas = 20, bool $hanyaKonsinyasi = false): array
+    public function Cari(string $kata, ?int $idGudang, int $batas = 20, bool $hanyaKonsinyasi = false, bool $hanyaProduksi = false): array
     {
-        $produk = $this->infoProduk->CariUntukStok($kata, max(1, min(50, $batas)), $hanyaKonsinyasi);
+        $produk = $this->infoProduk->CariUntukStok($kata, max(1, min(50, $batas)), $hanyaKonsinyasi, $hanyaProduksi);
         $id = array_map(fn (DataInfoProdukStok $p): int => $p->id, $produk);
         $saldo = [];
         $sudahAda = [];

@@ -364,6 +364,7 @@
 | D-328 | Agent, 25/11/2026 (pemilik produk: "kerjakan 4,5,6"): Pusat Unduhan memeriksa ulang izin saat mengunduh, halaman Karyawan memakai cakupan outlet pelaku, dan Checkout langganan menahan ketukan ganda 20 detik, sebagaimana v7.167. Perubahan perilaku yang terlihat pengguna: Manajer Outlet cabang tidak lagi melihat atau mengubah karyawan outlet lain dan wajib memilih outlet saat menambah karyawan tanpa akun. |
 | D-329 | Agent, 25/11/2026 (pemilik produk: "di bawah QR code di struk itu tidak perlu ada link nota online, cukup QR saja"): struk cetak hanya memuat QR struk digital, tanpa tautan tertulis, sebagaimana v7.168. |
 | D-330 | Agent, 25/11/2026 (pemilik produk: "kerjakan nomor 3"): outlet wajib untuk pengeluaran Aplikasi Owner bagi pengguna yang dibatasi dua outlet atau lebih, ditegakkan server hanya untuk aplikasi 1.0.3 ke atas, sebagaimana v7.169. Perubahan perilaku yang terlihat pengguna: formulir Catat pengeluaran meminta outlet (tanpa "Seluruh usaha") bagi pengguna yang berakses beberapa outlet tertentu. |
+| D-331 | Agent, 25/11/2026 (pemilik produk: "pada menu produksi, saat membuat produksi pastikan yang tampil hanya menu yang sesuai"): pemilih produk hasil di Order produksi disaring ke produk jenis Produksi tanpa nomor seri, sebagaimana v7.170. Ditafsirkan sebagai penyaringan pilihan hasil; bila maksudnya hal lain, dikoreksi pada perubahan berikutnya. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

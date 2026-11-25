@@ -162,6 +162,22 @@ describe('F-05a HTTP stok awal: posting, batalkan, status', function (): void {
     });
 });
 
+describe('D-331 pemilih hasil order produksi', function (): void {
+    it('cari dengan jenis=Produksi hanya menawarkan produk jenis Produksi tanpa nomor seri, tanpa jenis tetap semua produk berstok', function (): void {
+        [$t, $p] = SiapkanHttpStokAwal();
+        BantuanPersediaan::MasukSebagai($this, $t['Tenant']->Id);
+
+        $semua = collect($this->getJson('/kelola/persediaan/produk/cari?batas=50')->assertOk()->json('Data'));
+        $hasil = collect($this->getJson('/kelola/persediaan/produk/cari?batas=50&jenis=Produksi')->assertOk()->json('Data'));
+
+        expect($semua->pluck('Jenis')->unique()->count())->toBeGreaterThan(1)
+            ->and($hasil->pluck('Uuid')->all())->toContain($p['Produksi']->Uuid)
+            ->and($hasil->pluck('Jenis')->unique()->all())->toBe(['Produksi'])
+            ->and($hasil->pluck('Pelacakan')->all())->not->toContain('Seri')
+            ->and($hasil->pluck('Uuid')->all())->not->toContain($p['Stok']->Uuid);
+    });
+});
+
 describe('F-05a HTTP stok awal: izin, outlet, dan isolasi tenant', function (): void {
     it('matriks izin: StafGudang membuat draf tetapi 403 saat posting; Akuntan boleh posting tetapi 403 membuat draf; ManajerOutlet boleh keduanya; Kasir 403', function (): void {
         [$t, $p] = SiapkanHttpStokAwal();

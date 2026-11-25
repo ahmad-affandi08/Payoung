@@ -6,6 +6,7 @@ namespace App\Domain\Katalog\Kueri;
 
 use App\Domain\Katalog\Data\DataInfoProdukStok;
 use App\Domain\Katalog\Enum\JenisProduk;
+use App\Domain\Katalog\Enum\PelacakanProduk;
 use App\Domain\Katalog\Model\Produk;
 use App\Domain\Katalog\Model\ProdukBarcode;
 use App\Domain\Katalog\Model\ProdukGudang;
@@ -98,17 +99,24 @@ final class InfoProdukStok
     /**
      * Produk berstok yang belum diarsipkan dengan Nama/SKU mengandung `kata` atau barcode persis `kata`, urut nama.
      * `hanyaKonsinyasi` = hanya produk berjenis Konsinyasi (dokumen titipan F-05i), selain itu tanpa konsinyasi.
+     * `hanyaProduksi` = hanya produk jenis Produksi yang tidak dilacak nomor seri, yaitu yang boleh jadi hasil order
+     * produksi (D-331), supaya pemilih hasil tidak menawarkan produk yang pasti ditolak.
      *
      * @return list<DataInfoProdukStok>
      */
-    public function CariUntukStok(string $kata, int $batas = 20, bool $hanyaKonsinyasi = false): array
+    public function CariUntukStok(string $kata, int $batas = 20, bool $hanyaKonsinyasi = false, bool $hanyaProduksi = false): array
     {
         $kata = trim($kata);
         $pola = '%'.addcslashes($kata, '%_\\').'%';
 
         $produk = Produk::query()
             ->whereNull('DiarsipkanPada')
-            ->whereIn('Jenis', $hanyaKonsinyasi ? [JenisProduk::Konsinyasi->value] : self::AmbilJenisBerstok())
+            ->whereIn('Jenis', match (true) {
+                $hanyaProduksi => [JenisProduk::Produksi->value],
+                $hanyaKonsinyasi => [JenisProduk::Konsinyasi->value],
+                default => self::AmbilJenisBerstok(),
+            })
+            ->when($hanyaProduksi, fn ($kueri) => $kueri->where('Pelacakan', '!=', PelacakanProduk::Seri->value))
             ->when($kata !== '', fn ($kueri) => $kueri->where(fn ($dalam) => $dalam
                 ->where('Nama', 'like', $pola)
                 ->orWhere('Sku', 'like', $pola)

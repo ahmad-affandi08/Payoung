@@ -15,7 +15,10 @@ import { useDrafLokal } from '@/Komponen/Formulir/useDrafLokal';
 import DaftarGalatServer from '@/Komponen/Katalog/DaftarGalatServer';
 import Panel from '@/Komponen/Kelola/Panel';
 import { useEntriCepat } from '@/Komponen/Persediaan/EntriCepat';
-import PemilihProdukStok, { type ProdukStokTerpilih } from '@/Komponen/Persediaan/PemilihProdukStok';
+import PemilihProdukStok, {
+    BuatUrlCariProdukStok,
+    type ProdukStokTerpilih,
+} from '@/Komponen/Persediaan/PemilihProdukStok';
 import { BuatUlid } from '@/Komponen/Persediaan/UlidKlien';
 import PemilihTanggal from '@/Komponen/Tanggal/PemilihTanggal';
 import { Button } from '@/Komponen/Ui/button';
@@ -35,6 +38,11 @@ function BuatKunci(): string {
     nomorKunci += 1;
 
     return `pr-${String(nomorKunci)}`;
+}
+
+/** Pemilih hasil hanya menawarkan produk yang boleh diproduksi (jenis Produksi, tanpa nomor seri). */
+export function BuatUrlCariProdukHasil(kata: string, uuidGudang: string | null): string {
+    return `${BuatUrlCariProdukStok(kata, uuidGudang)}&jenis=Produksi`;
 }
 
 /** Jumlah positif sesuai aturan desimal produk (server memeriksa ulang). */
@@ -346,6 +354,7 @@ export default function HalamanFormOrderProduksi({
                             label="Produk yang diproduksi"
                             uuidGudang={gudang === '' ? null : gudang}
                             saatPilih={PilihHasil}
+                            buatUrl={BuatUrlCariProdukHasil}
                             keterangan="Hanya produk berjenis Produksi (misal roti, kue, barang rakitan)."
                             galat={
                                 galatProduk ??

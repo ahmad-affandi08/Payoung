@@ -25,6 +25,7 @@ final class ProdukStokKontroler extends DasarPersediaanKontroler
                 mb_substr(trim($permintaan->string('kata')->toString()), 0, 100),
                 $idGudang,
                 max(1, min(50, $permintaan->integer('batas', 20))),
+                hanyaProduksi: $permintaan->string('jenis')->toString() === 'Produksi',
             ),
         ]);
     }

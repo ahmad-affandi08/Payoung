@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanDaftarOrderProduksi from '@/Halaman/Kelola/Persediaan/Produksi/Daftar';
 import HalamanDetailOrderProduksi from '@/Halaman/Kelola/Persediaan/Produksi/Detail';
-import HalamanFormOrderProduksi, { CekJumlahProduksi } from '@/Halaman/Kelola/Persediaan/Produksi/Form';
+import HalamanFormOrderProduksi, {
+    BuatUrlCariProdukHasil,
+    CekJumlahProduksi,
+} from '@/Halaman/Kelola/Persediaan/Produksi/Form';
 import { AturHalamanUji, RenderUji, tiruanRouter } from '@/Komponen/Katalog/TiruanInertia';
 import { BuatHasilTabel, GudangKedua, GudangUtama } from '@/Komponen/Persediaan/DataUjiPersediaan';
 import type { IzinDokumenPersediaan } from '@/Tipe/DokumenPersediaan';
@@ -144,6 +147,13 @@ describe('F-05e produksi: halaman', () => {
         expect(screen.getByText('Pilih lokasi produksi.')).toBeTruthy();
         expect(screen.getByText('Tambahkan minimal satu bahan.')).toBeTruthy();
         expect(tiruanRouter.post).not.toHaveBeenCalled();
+    });
+
+    it('D-331 pemilih produk hasil hanya meminta produk jenis Produksi, tetap membawa kata dan lokasi stok', () => {
+        expect(BuatUrlCariProdukHasil('roti', 'G1')).toBe(
+            '/kelola/persediaan/produk/cari?kata=roti&gudang=G1&batas=20&jenis=Produksi',
+        );
+        expect(BuatUrlCariProdukHasil('', null)).toBe('/kelola/persediaan/produk/cari?kata=&batas=20&jenis=Produksi');
     });
 
     it('CekJumlahProduksi menolak nol, minus, dan desimal untuk satuan bulat', () => {
