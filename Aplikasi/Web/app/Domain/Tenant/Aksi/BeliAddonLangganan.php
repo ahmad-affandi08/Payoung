@@ -6,9 +6,11 @@ namespace App\Domain\Tenant\Aksi;
 
 use App\Domain\Bersama\Galat\PelanggaranAturanBisnis;
 use App\Domain\Bersama\Tenant\KonteksTenant;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Tenant\Enum\JenisTagihanLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Domain\Tenant\Layanan\PenerbitTagihanLangganan;
 use App\Domain\Tenant\Model\Addon;
 use App\Domain\Tenant\Model\Langganan;
@@ -30,6 +32,7 @@ final class BeliAddonLangganan
     public function __construct(
         private readonly KonteksTenant $konteks,
         private readonly PenerbitTagihanLangganan $penerbit,
+        private readonly KetersediaanWhatsapp $whatsapp,
     ) {}
 
     public function Jalankan(int $idPengguna, string $kodeAddon, int $jumlah = 1): TagihanLangganan
@@ -41,6 +44,11 @@ final class BeliAddonLangganan
                 ?? throw new PelanggaranAturanBisnis('LanggananTidakAda', 'Data langganan usaha ini tidak ditemukan. Hubungi tim kami.');
             $addon = Addon::query()->where('Kode', strtoupper(trim($kodeAddon)))->where('Status', StatusPaket::Aktif->value)->first()
                 ?? throw new PelanggaranAturanBisnis('AddonTidakTersedia', 'Add-on ini tidak tersedia. Pilih add-on lain dari daftar.', 'KodeAddon');
+
+            // D-333: add-on WhatsApp tidak dijual selama WhatsApp belum aktif di konsol, juga lewat form lama atau permintaan langsung.
+            if ($addon->KunciFitur === PemeriksaFiturTenant::KUNCI_WHATSAPP && ! $this->whatsapp->PlatformAktif()) {
+                throw new PelanggaranAturanBisnis('AddonTidakTersedia', 'Add-on ini tidak tersedia. Pilih add-on lain dari daftar.', 'KodeAddon');
+            }
 
             // Jumlah hanya bermakna untuk add-on penambah batas (outlet/perangkat tambahan); selain itu selalu 1.
             $jumlah = $addon->TambahanBatas === null ? 1 : max(1, min(self::JUMLAH_MAKS, $jumlah));

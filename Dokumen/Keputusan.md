@@ -334,6 +334,7 @@
 | D-330 | Agent, 25/11/2026 (pemilik produk: "kerjakan nomor 3"): outlet wajib untuk pengeluaran Aplikasi Owner bagi pengguna yang dibatasi dua outlet atau lebih, ditegakkan server hanya untuk aplikasi 1.0.3 ke atas, sebagaimana v7.169. Perubahan perilaku yang terlihat pengguna: formulir Catat pengeluaran meminta outlet (tanpa "Seluruh usaha") bagi pengguna yang berakses beberapa outlet tertentu. |
 | D-331 | Agent, 25/11/2026 (pemilik produk: "pada menu produksi, saat membuat produksi pastikan yang tampil hanya menu yang sesuai"): pemilih produk hasil di Order produksi disaring ke produk jenis Produksi tanpa nomor seri, sebagaimana v7.170. Ditafsirkan sebagai penyaringan pilihan hasil; bila maksudnya hal lain, dikoreksi pada perubahan berikutnya. |
 | D-332 | Agent, 25/11/2026 (pemilik produk: "gas kerjakan sesuai saran kamu, harus responsif, build lalu push ke main"): Langganan memakai kepala paket + tab (Langganan B) dan Tagihan memakai penunjuk perjalanan + dua kolom (Tagihan A), sebagaimana v7.171. Perubahan perilaku yang terlihat pengguna: halaman Langganan kini berisi tab, bukan satu halaman panjang, dan aksi Perpanjang ada di kepala halaman. |
+| D-333 | Agent, 25/11/2026 (pemilik produk: add-on WhatsApp masih tampil padahal WhatsApp belum diatur di konsol): add-on yang membuka fitur WhatsApp disembunyikan dan tidak bisa dibeli selama WhatsApp belum aktif di konsol, sebagaimana v7.172. Melengkapi D-299. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

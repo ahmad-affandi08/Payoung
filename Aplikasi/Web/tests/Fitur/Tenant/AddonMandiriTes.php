@@ -13,6 +13,7 @@ use App\Domain\Tenant\Enum\SiklusTagihan;
 use App\Domain\Tenant\Enum\StatusLangganan;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Enum\StatusTagihanLangganan;
+use App\Domain\Tenant\Kueri\AddonLanggananTenant;
 use App\Domain\Tenant\Kueri\SumberFiturTenant;
 use App\Domain\Tenant\Layanan\EvaluatorFitur;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
@@ -188,6 +189,24 @@ describe('Beli add-on → bayar → aktif', function (): void {
             ->post(BantuanTagihan::Url('/kelola/langganan/addon/beli'), ['KodeAddon' => 'WA_1000'])->assertSessionHasErrors('KodeAddon');
 
         expect(TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $this->tenant->Id)->count())->toBe(0);
+    });
+});
+
+describe('Add-on WhatsApp mengikuti ketersediaan WhatsApp di konsol (D-333)', function (): void {
+    it('tanpa penyedia WhatsApp aktif add-on kuota tidak ditawarkan dan tidak bisa dibeli, dengan penyedia aktif tampil dan bisa dibeli', function (): void {
+        Addon::query()->where('Kode', 'WA_1000')->update(['Status' => StatusPaket::Aktif->value]);
+        $kodeTersedia = fn (): array => array_column(app(AddonLanggananTenant::class)->Ambil($this->tenant->Id)['Tersedia'], 'Kode');
+
+        config(['integrasi.Whatsapp.Penyedia' => '']);
+        expect($kodeTersedia())->not->toContain('WA_1000')->and($kodeTersedia())->toContain('TOKO_ONLINE');
+        BantuanTagihan::Masuk($this, $this->pemilik, $this->tenant)
+            ->post(BantuanTagihan::Url('/kelola/langganan/addon/beli'), ['KodeAddon' => 'WA_1000'])->assertSessionHasErrors('KodeAddon');
+        expect(TagihanLangganan::query()->withoutGlobalScopes()->where('IdTenant', $this->tenant->Id)->count())->toBe(0);
+
+        config(['integrasi.Whatsapp.Penyedia' => 'Fonnte']);
+        expect($kodeTersedia())->toContain('WA_1000');
+        $tagihan = BeliAddonUji($this, $this->pemilik, $this->tenant, 'WA_1000');
+        expect($tagihan->Jenis)->toBe(JenisTagihanLangganan::Addon);
     });
 });
 

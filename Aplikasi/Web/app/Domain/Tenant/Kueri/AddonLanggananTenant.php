@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Tenant\Kueri;
 
 use App\Domain\Bersama\Nilai\Uang;
+use App\Domain\Integrasi\Whatsapp\KetersediaanWhatsapp;
 use App\Domain\Tenant\Enum\StatusPaket;
 use App\Domain\Tenant\Layanan\KelayakanBeliAddon;
+use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Domain\Tenant\Layanan\PenghitungProrataAddon;
 use App\Domain\Tenant\Model\Addon;
 use App\Domain\Tenant\Model\Fitur;
@@ -19,12 +21,16 @@ use Illuminate\Support\Carbon;
  * Add-on tenant (D-49) untuk halaman Langganan dan dialog fitur terkunci: add-on yang dimiliki (aktif atau baru
  * berakhir) dan katalog yang bisa dibeli, lengkap dengan alasan bila belum bisa dibeli mandiri serta perkiraan harga
  * prorata sebelum PPN. Perkiraan memakai rumus yang sama dengan tagihan (`PenghitungProrataAddon`).
+ *
+ * D-333: add-on yang membuka fitur WhatsApp tidak ditawarkan selama WhatsApp belum diaktifkan di konsol (D-299), supaya
+ * tenant tidak membeli sesuatu yang belum bisa dipakai. Add-on yang sudah dimiliki tetap tampil.
  */
 final class AddonLanggananTenant
 {
     public function __construct(
         private readonly KelayakanBeliAddon $kelayakan,
         private readonly PenghitungProrataAddon $prorata,
+        private readonly KetersediaanWhatsapp $whatsapp,
     ) {}
 
     /**
@@ -62,6 +68,10 @@ final class AddonLanggananTenant
 
         foreach (Addon::query()->where('Status', StatusPaket::Aktif->value)->orderBy('HargaBulanan')->orderBy('Nama')->get() as $addon) {
             if ($idDimiliki[$addon->Id] ?? false) {
+                continue;
+            }
+
+            if ($addon->KunciFitur === PemeriksaFiturTenant::KUNCI_WHATSAPP && ! $this->whatsapp->PlatformAktif()) {
                 continue;
             }
 
