@@ -366,6 +366,37 @@ void main() {
       },
     );
 
+    testWidgets('OutletWajib: tanpa opsi "Seluruh usaha", Simpan menunggu outlet dipilih, lalu outlet ikut terkirim', (
+      tester,
+    ) async {
+      jawaban['GET aksi-cepat/pengeluaran/opsi'] = (p) => JsonUji({...opsi, 'OutletWajib': true});
+      jawaban['POST aksi-cepat/pengeluaran'] = (p) => JsonUji({
+        'Pengeluaran': {'Uuid': 'KB2', 'Nomor': 'KB/2026/09/0002', 'Jumlah': '350000.00', 'BerLampiran': false},
+      }, 201);
+      await BukaAksiCepat(tester);
+      await Isi(tester);
+
+      final simpan = find.widgetWithText(FilledButton, 'Simpan pengeluaran');
+      await tester.ensureVisible(simpan);
+      expect(tester.widget<FilledButton>(simpan).onPressed, isNull, reason: 'Outlet wajib belum dipilih.');
+
+      final pilihOutlet = find.byType(DropdownButtonFormField<String?>);
+      await tester.ensureVisible(pilihOutlet);
+      await tester.tap(pilihOutlet);
+      await tester.pumpAndSettle();
+      expect(find.text('Seluruh usaha'), findsNothing);
+      await tester.tap(find.text('Kartasura').last);
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(simpan);
+      expect(tester.widget<FilledButton>(simpan).onPressed, isNotNull);
+      await tester.tap(simpan);
+      await tester.pumpAndSettle();
+
+      final badan = latin1.decode(aksi.singleWhere((p) => p.method == 'POST').bodyBytes);
+      expect(badan, allOf(contains('name="Outlet"'), contains('O2')));
+    });
+
     testWidgets('galat server: pesan tampil dan formulir tetap terisi supaya bisa dicoba lagi', (tester) async {
       jawaban['GET aksi-cepat/pengeluaran/opsi'] = (p) => JsonUji(opsi);
       jawaban['POST aksi-cepat/pengeluaran'] = (p) => JsonUji({

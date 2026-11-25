@@ -16,6 +16,7 @@ use App\Domain\Promo\Aksi\UbahStatusPromo;
 use App\Domain\Promo\Enum\StatusPromo;
 use App\Domain\Promo\Kueri\DaftarPromoAksiCepat;
 use App\Domain\Promo\Model\Promo;
+use App\Domain\Tenant\Model\RilisAplikasi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -29,6 +30,9 @@ use Illuminate\Support\Facades\Cache;
 final class AksiCepatKontroler extends DasarPemilikKontroler
 {
     private const MENIT_KUNCI_IDEMPOTEN = 10;
+
+    /** Versi Aplikasi Owner pertama yang menampilkan pilihan outlet wajib untuk pengeluaran (D-330). */
+    private const VERSI_OWNER_OUTLET_WAJIB = '1.0.3';
 
     public function Produk(Request $permintaan, CariProdukAksiCepat $cari): JsonResponse
     {
@@ -73,9 +77,10 @@ final class AksiCepatKontroler extends DasarPemilikKontroler
         return response()->json(['Promo' => ['Uuid' => $hasil->Uuid, 'Nama' => $hasil->Nama, 'Aktif' => $hasil->Status === StatusPromo::Aktif]]);
     }
 
-    public function OpsiPengeluaran(OpsiPengeluaranPemilik $opsi): JsonResponse
+    public function OpsiPengeluaran(Request $permintaan, OpsiPengeluaranPemilik $opsi): JsonResponse
     {
-        return response()->json($opsi->Ambil());
+        // D-330: aplikasi memakai `OutletWajib` untuk menampilkan pilihan outlet tanpa opsi "Seluruh usaha".
+        return response()->json([...$opsi->Ambil(), 'OutletWajib' => $this->CekOutletPengeluaranWajib($permintaan)]);
     }
 
     public function CatatPengeluaran(Request $permintaan, CatatPengeluaranPemilik $catat): JsonResponse
@@ -89,6 +94,12 @@ final class AksiCepatKontroler extends DasarPemilikKontroler
             'Foto' => ['nullable', 'file', 'mimes:'.implode(',', (array) config('akuntansi.EkstensiLampiran')), 'max:'.(int) config('akuntansi.UkuranMaksimalLampiranKb')],
         ], ['Jumlah.regex' => 'Jumlah harus angka Rupiah, maksimal 2 angka di belakang koma.']);
         $idOutlet = $this->SatuOutlet($data['Outlet'] ?? null, $permintaan, wajib: false);
+
+        // D-330: pengguna yang dibatasi dua outlet atau lebih harus memilih outlet agar pengeluaran tidak tercatat tanpa
+        // outlet. Hanya untuk versi aplikasi yang sudah menampilkan pilihan itu: versi lama tetap diterima (kompatibel mundur).
+        if ($idOutlet === null && $this->CekOutletPengeluaranWajib($permintaan) && $this->CekAplikasiPahamOutletWajib($permintaan)) {
+            throw new PelanggaranAturanBisnis('OutletWajib', 'Pilih outlet untuk pengeluaran ini.', 'Outlet');
+        }
 
         // Ketuk ganda atau kirim ulang karena sinyal putus: kunci yang sama menghasilkan satu pengeluaran saja.
         $kunci = $permintaan->header('Idempotency-Key');
@@ -123,6 +134,22 @@ final class AksiCepatKontroler extends DasarPemilikKontroler
         }
 
         return response()->json($hasil, 201);
+    }
+
+    /** Pengguna dibatasi ke dua outlet atau lebih: pengeluaran tanpa outlet tidak bisa dipastikan milik outlet mana. */
+    private function CekOutletPengeluaranWajib(Request $permintaan): bool
+    {
+        $boleh = $this->IdOutletBoleh($permintaan);
+
+        return $boleh !== null && count($boleh) >= 2;
+    }
+
+    /** Aplikasi Owner mulai 1.0.3 menampilkan pilihan outlet wajib. Tanpa header versi diperlakukan sebagai versi lama. */
+    private function CekAplikasiPahamOutletWajib(Request $permintaan): bool
+    {
+        $versi = $permintaan->header('X-Versi-Aplikasi');
+
+        return is_string($versi) && $versi !== '' && RilisAplikasi::BandingkanVersi($versi, self::VERSI_OWNER_OUTLET_WAJIB) >= 0;
     }
 
     private function CariProduk(string $uuid): Produk

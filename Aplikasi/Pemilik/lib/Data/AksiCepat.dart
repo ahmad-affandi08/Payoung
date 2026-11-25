@@ -97,14 +97,18 @@ class PilihanPengeluaran {
 }
 
 class OpsiPengeluaran {
-  const OpsiPengeluaran({required this.kategori, required this.sumber});
+  const OpsiPengeluaran({required this.kategori, required this.sumber, this.outletWajib = false});
 
   final List<PilihanPengeluaran> kategori;
   final List<PilihanPengeluaran> sumber;
 
+  /// D-330: pengguna dibatasi dua outlet atau lebih, jadi pengeluaran wajib memilih outlet (tanpa "Seluruh usaha").
+  final bool outletWajib;
+
   static OpsiPengeluaran DariJson(Map<String, Object?> json) => OpsiPengeluaran(
     kategori: [for (final k in UraiJson.AmbilDaftarPeta(json['Kategori'])) PilihanPengeluaran.DariJson(k)],
     sumber: [for (final s in UraiJson.AmbilDaftarPeta(json['Sumber'])) PilihanPengeluaran.DariJson(s)],
+    outletWajib: UraiJson.AmbilBenar(json['OutletWajib']),
   );
 }
 

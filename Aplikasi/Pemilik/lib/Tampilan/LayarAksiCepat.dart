@@ -590,7 +590,14 @@ class _LayarPengeluaranState extends ConsumerState<_LayarPengeluaran> {
     }
   }
 
-  bool get _bisaKirim => !_mengirim && _kategori != null && _sumber != null && (int.tryParse(_jumlah.text) ?? 0) > 0;
+  bool get _outletWajib => _opsi?.outletWajib ?? false;
+
+  bool get _bisaKirim =>
+      !_mengirim &&
+      _kategori != null &&
+      _sumber != null &&
+      (!_outletWajib || _outlet != null) &&
+      (int.tryParse(_jumlah.text) ?? 0) > 0;
 
   Future<void> _Foto() async {
     final bytes = await ref.read(penyediaKameraNota).Ambil();
@@ -685,17 +692,17 @@ class _LayarPengeluaranState extends ConsumerState<_LayarPengeluaran> {
                   items: [for (final s in opsi.sumber) DropdownMenuItem(value: s.uuid, child: Text(s.nama))],
                   onChanged: (v) => setState(() => _sumber = v),
                 ),
-                if (outlet.length > 1) ...[
+                if (outlet.length > 1 || _outletWajib) ...[
                   const SizedBox(height: TokenJarak.jarak12),
                   DropdownButtonFormField<String?>(
                     initialValue: _outlet,
                     isExpanded: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Outlet (boleh dikosongkan)',
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: _outletWajib ? 'Outlet' : 'Outlet (boleh dikosongkan)',
+                      border: const OutlineInputBorder(),
                     ),
                     items: [
-                      const DropdownMenuItem<String?>(child: Text('Seluruh usaha')),
+                      if (!_outletWajib) const DropdownMenuItem<String?>(child: Text('Seluruh usaha')),
                       for (final o in outlet) DropdownMenuItem<String?>(value: o.uuid, child: Text(o.nama)),
                     ],
                     onChanged: (v) => setState(() => _outlet = v),

@@ -259,6 +259,39 @@ describe('OWN-07 pengeluaran dengan foto nota', function (): void {
         expect(TransaksiKasBank::query()->count())->toBe(1);
     });
 
+    it('D-330: pengguna yang dibatasi dua outlet wajib memilih outlet (aplikasi 1.0.3 ke atas). Versi lama dan pengguna satu outlet tetap diterima', function (): void {
+        $k = BantuanPenjualan::Siapkan($this);
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        app(SiapkanKategoriBiayaBawaan::class)->Jalankan();
+        $listrik = KategoriKas::query()->where('Nama', 'Listrik')->sole();
+        $kas = Akun::query()->where('KasBank', true)->where('Aktif', true)->orderBy('Kode')->firstOrFail();
+        $cabang = BantuanJurnal::BuatOutlet();
+        $peran = BantuanOrganisasi::Peran($k['Tenant']->Id, PeranTenantBawaan::Admin);
+        $dua = BantuanOrganisasi::TambahAnggota($k['Tenant']->Id, PeranTenantBawaan::Admin, semuaOutlet: false);
+
+        foreach ([$k['Outlet'], $cabang] as $outlet) {
+            OutletPengguna::query()->create(['IdOutlet' => $outlet->Id, 'IdPengguna' => $dua->Id, 'IdPeran' => $peran->Id]);
+        }
+
+        $token = TokenAksiCepatUji($this, $dua, 'kata-sandi-uji');
+        $tenant = $k['Tenant']->Uuid;
+        $badan = ['UuidKategori' => $listrik->Uuid, 'UuidAkunSumber' => $kas->Uuid, 'Jumlah' => '50000'];
+        $baru = ['X-Versi-Aplikasi' => '1.0.3'];
+
+        PanggilAksiCepatUji($this, $token, $tenant, 'GET', '/pengeluaran/opsi')->assertOk()->assertJsonPath('OutletWajib', true);
+        PanggilAksiCepatUji($this, $token, $tenant, 'POST', '/pengeluaran', $badan, $baru)->assertStatus(422)->assertJsonPath('Galat.Kode', 'OutletWajib');
+        BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
+        expect(TransaksiKasBank::query()->count())->toBe(0);
+
+        PanggilAksiCepatUji($this, $token, $tenant, 'POST', '/pengeluaran', [...$badan, 'Outlet' => $cabang->Uuid], $baru)->assertCreated();
+        // Versi lama (tanpa pilihan outlet di layar) tetap diterima tanpa outlet, sesuai kompatibilitas dua versi minor.
+        PanggilAksiCepatUji($this, $token, $tenant, 'POST', '/pengeluaran', $badan, ['X-Versi-Aplikasi' => '1.0.2'])->assertCreated();
+        // Pemilik berakses semua outlet boleh mencatat pengeluaran tingkat usaha tanpa outlet.
+        $tokenPemilik = TokenAksiCepatUji($this, $k['Pemilik']);
+        PanggilAksiCepatUji($this, $tokenPemilik, $tenant, 'GET', '/pengeluaran/opsi')->assertOk()->assertJsonPath('OutletWajib', false);
+        PanggilAksiCepatUji($this, $tokenPemilik, $tenant, 'POST', '/pengeluaran', $badan, $baru)->assertCreated();
+    });
+
     it('lampiran bukan gambar/dokumen yang diizinkan ditolak tanpa mencatat transaksi', function (): void {
         $k = BantuanPenjualan::Siapkan($this);
         BantuanOrganisasi::AturKonteks($k['Tenant']->Id);
