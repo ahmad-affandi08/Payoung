@@ -187,7 +187,7 @@ export function KerangkaPemilihProduk({
                                 disabled={disabled}
                                 onKeyDown={SaatTombol}
                                 className={cn(
-                                    'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi shadow-xs outline-none pointer-coarse:h-11',
+                                    'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi shadow-isian outline-none pointer-coarse:h-11',
                                     'focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40',
                                     'disabled:cursor-not-allowed disabled:bg-latar disabled:text-teks-sekunder',
                                     galat ? 'border-bahaya' : 'border-garis-input',

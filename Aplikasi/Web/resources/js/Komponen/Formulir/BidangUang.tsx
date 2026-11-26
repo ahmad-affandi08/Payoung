@@ -78,7 +78,7 @@ export default function BidangUang({
                 className={cn(
                     'h-8 pointer-coarse:h-11 bg-permukaan',
                     galat ? 'border-bahaya' : 'border-garis-input',
-                    disabled && 'bg-latar',
+                    disabled && 'bg-latar shadow-none',
                 )}
             >
                 <InputGroupAddon aria-hidden="true" className="text-isi font-normal text-teks-sekunder">

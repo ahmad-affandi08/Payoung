@@ -166,7 +166,7 @@ function AturKolom<T>({
             </PopoverTrigger>
             <PopoverContent align="end" className="w-72 border-garis bg-permukaan p-3">
                 <p className="mb-2 text-label font-semibold text-teks-utama">Kolom yang ditampilkan</p>
-                <div className="mb-2 flex h-8 pointer-coarse:h-11 items-center gap-2 rounded-kontrol border border-garis-input bg-permukaan px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/40">
+                <div className="mb-2 flex h-8 pointer-coarse:h-11 items-center gap-2 rounded-kontrol border border-garis-input bg-permukaan px-3 shadow-isian focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/40">
                     <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
                     <input
                         value={kataKolom}

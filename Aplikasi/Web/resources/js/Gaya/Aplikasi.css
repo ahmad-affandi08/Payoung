@@ -103,6 +103,8 @@
     --color-bayangan-tipis: color-mix(in oklab, var(--color-teks-utama) 5%, transparent);
     --color-bayangan: color-mix(in oklab, var(--color-teks-utama) 10%, transparent);
     --color-bayangan-tebal: color-mix(in oklab, var(--color-teks-utama) 25%, transparent);
+    /* Bayangan ke dalam kolom isian (D-335): kolom terbaca "dilubangi" di atas panel putih. */
+    --color-bayangan-isian: color-mix(in oklab, var(--color-teks-utama) 14%, transparent);
 }
 
 /* ============================================================================================
@@ -161,6 +163,7 @@
     --drop-shadow: 0 1px 2px var(--color-bayangan), 0 1px 1px var(--color-bayangan-tipis);
     --shadow-2xs: 0 1px var(--color-bayangan-tipis);
     --shadow-xs: 0 1px 2px 0 var(--color-bayangan-tipis);
+    --shadow-isian: inset 2px 2px 4px 0 var(--color-bayangan-isian), inset 0 1px 1px 0 var(--color-bayangan-isian);
     --shadow-sm: 0 1px 3px 0 var(--color-bayangan), 0 1px 2px -1px var(--color-bayangan);
     --shadow-md: 0 4px 6px -1px var(--color-bayangan), 0 2px 4px -2px var(--color-bayangan);
     --shadow-lg: 0 10px 15px -3px var(--color-bayangan), 0 4px 6px -4px var(--color-bayangan);

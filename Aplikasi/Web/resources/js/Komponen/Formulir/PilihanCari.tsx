@@ -147,9 +147,9 @@ export default function PilihanCari({
                     disabled={disabled}
                     onKeyDown={SaatTombol}
                     className={cn(
-                        'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi text-teks-utama shadow-xs outline-none pointer-coarse:h-11',
+                        'flex h-8 w-full min-w-0 items-center justify-between gap-2 rounded-kontrol border bg-permukaan px-3 text-left text-isi text-teks-utama shadow-isian outline-none pointer-coarse:h-11',
                         'focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/40',
-                        'disabled:cursor-not-allowed disabled:bg-latar disabled:text-teks-sekunder',
+                        'disabled:cursor-not-allowed disabled:bg-latar disabled:text-teks-sekunder disabled:shadow-none',
                         galat ? 'border-bahaya' : 'border-garis-input',
                         terbuka && 'border-brand ring-2 ring-brand/40',
                         className,

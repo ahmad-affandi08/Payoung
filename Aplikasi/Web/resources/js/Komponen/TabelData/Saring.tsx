@@ -91,7 +91,7 @@ function DaftarOpsiSaring({ definisi, nilai, saatBerubah: SaatBerubah }: PropsPe
 
     return (
         <div className="flex flex-col gap-2">
-            <div className="flex h-8 pointer-coarse:h-11 items-center gap-2 rounded-kontrol border border-garis-input bg-permukaan px-3 focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/40">
+            <div className="flex h-8 pointer-coarse:h-11 items-center gap-2 rounded-kontrol border border-garis-input bg-permukaan px-3 shadow-isian focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/40">
                 <SearchIcon aria-hidden="true" className="size-4 shrink-0 text-teks-sekunder" />
                 <input
                     value={kata}
