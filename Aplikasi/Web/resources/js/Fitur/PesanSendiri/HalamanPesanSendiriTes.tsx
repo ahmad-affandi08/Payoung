@@ -72,7 +72,10 @@ const alamat = '/kedai-kopi-senja/meja/TokenMejaTujuhAcak32KarakterAbcd';
 type Panggilan = { url: string; metode: string; badan: unknown };
 
 function PasangFetch(
-    status: { Status: string; AlasanTolak: string | null } = { Status: 'MenungguKonfirmasi', AlasanTolak: null },
+    status: { Status: string; AlasanTolak: string | null; Pembayaran?: string | null } = {
+        Status: 'MenungguKonfirmasi',
+        AlasanTolak: null,
+    },
     qrisLunas = false,
 ) {
     const panggilan: Panggilan[] = [];
@@ -145,6 +148,7 @@ function PasangFetch(
                 Uuid: url.split('/').pop(),
                 Nomor: 'QR/SLO1/260926-0001',
                 Status: status.Status,
+                Pembayaran: status.Pembayaran ?? null,
                 Baris: [
                     {
                         Uuid: 'B1',
@@ -304,6 +308,95 @@ describe('Halaman publik pesan sendiri QR meja (F-17)', () => {
             window.dispatchEvent(new Event('offline'));
         });
         expect(screen.getByText(/Tidak ada koneksi internet/)).toBeTruthy();
+    });
+
+    describe('D-338 kartu pesanan terakhir', () => {
+        // Tes offline di atas membiarkan status online TanStack Query (global) mati, jadi dipulihkan dulu.
+        beforeEach(() => onlineManager.setOnline(true));
+
+        const kunci = `pesan-sendiri:${props.Token}:pesanan`;
+        const UUID = '01J8Z0A1B2C3D4E5F6G7H8J9K0';
+        const Catatan = (waktu: number, tambahan: Record<string, unknown> = {}) =>
+            JSON.stringify([{ Uuid: UUID, Waktu: waktu, ...tambahan }]);
+
+        it('Diterima dan belum dibayar: kartu tetap ada, termasuk pada pembukaan berikutnya', async () => {
+            window.localStorage.setItem(kunci, Catatan(Date.now()));
+            PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'BelumDibayar' });
+            const { unmount: Lepas } = RenderUji(<HalamanPesanSendiri {...props} />);
+
+            await waitFor(() => expect(screen.getByText('Diterima')).toBeTruthy());
+            Lepas();
+            RenderUji(<HalamanPesanSendiri {...props} />);
+            await waitFor(() => expect(screen.getByText('Diterima')).toBeTruthy());
+        });
+
+        it('sudah dibayar di kasir: kartu menampilkan Sudah dibayar sekali, lalu hilang pada pembukaan berikutnya', async () => {
+            window.localStorage.setItem(kunci, Catatan(Date.now()));
+            PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'Dibayar' });
+            const { unmount: Lepas } = RenderUji(<HalamanPesanSendiri {...props} />);
+
+            await waitFor(() => expect(screen.getByText('Sudah dibayar')).toBeTruthy());
+            expect(screen.getByText('Terima kasih!')).toBeTruthy();
+            expect(screen.queryByText('Diterima')).toBeNull();
+            Lepas();
+
+            RenderUji(<HalamanPesanSendiri {...props} />);
+            expect(screen.queryByRole('region', { name: 'Pesanan terakhir' })).toBeNull();
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([]);
+        });
+
+        it('halaman status: pesan sesuai pembayaran, tidak lagi menyuruh bayar di kasir', async () => {
+            window.localStorage.setItem(kunci, Catatan(Date.now()));
+            PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'Dibayar' });
+            RenderUji(<HalamanPesanSendiri {...props} />);
+
+            await waitFor(() => expect(screen.getByText('Sudah dibayar')).toBeTruthy());
+            fireEvent.click(screen.getByRole('button', { name: 'Lihat status' }));
+            await waitFor(() =>
+                expect(screen.getByText('Pesanan sudah dibayar. Terima kasih sudah memesan!')).toBeTruthy(),
+            );
+            expect(screen.queryByText(/Bayar di kasir setelah selesai/)).toBeNull();
+        });
+
+        it('tagihan dibatalkan kasir: label Dibatalkan, juga keadaan akhir', async () => {
+            window.localStorage.setItem(kunci, Catatan(Date.now()));
+            PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'Dibatalkan' });
+            RenderUji(<HalamanPesanSendiri {...props} />);
+
+            await waitFor(() => expect(screen.getByText('Dibatalkan')).toBeTruthy());
+            await waitFor(() =>
+                expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')[0]).toMatchObject({ Selesai: true }),
+            );
+        });
+
+        it('tombol tutup membuang kartu dan catatannya', async () => {
+            window.localStorage.setItem(kunci, Catatan(Date.now()));
+            PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'BelumDibayar' });
+            RenderUji(<HalamanPesanSendiri {...props} />);
+
+            await waitFor(() => expect(screen.getByText('Diterima')).toBeTruthy());
+            fireEvent.click(screen.getByRole('button', { name: 'Tutup pesanan terakhir' }));
+
+            expect(screen.queryByRole('region', { name: 'Pesanan terakhir' })).toBeNull();
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([]);
+        });
+
+        it('lewat 6 jam: kartu tidak muncul dan catatannya dibersihkan. Format lama (tanpa waktu) tetap terbaca', async () => {
+            const tujuhJam = Date.now() - 7 * 60 * 60 * 1000;
+            window.localStorage.setItem(kunci, Catatan(tujuhJam));
+            const panggilan = PasangFetch({ Status: 'Diterima', AlasanTolak: null, Pembayaran: 'BelumDibayar' });
+            const { unmount: Lepas } = RenderUji(<HalamanPesanSendiri {...props} />);
+
+            expect(screen.queryByRole('region', { name: 'Pesanan terakhir' })).toBeNull();
+            expect(panggilan.some((p) => p.url.includes('/pesanan/'))).toBe(false);
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([]);
+            Lepas();
+
+            window.localStorage.setItem(kunci, JSON.stringify([UUID]));
+            RenderUji(<HalamanPesanSendiri {...props} />);
+            await waitFor(() => expect(screen.getByText('Diterima')).toBeTruthy());
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')[0]).toMatchObject({ Uuid: UUID });
+        });
     });
 
     it('v2.06 varian wajib dipilih (varian tanpa harga nonaktif). Keranjang menampilkan nama varian dan perkiraan total dari server', async () => {

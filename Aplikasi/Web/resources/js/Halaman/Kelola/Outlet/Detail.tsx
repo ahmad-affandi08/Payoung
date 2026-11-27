@@ -11,7 +11,7 @@ import JenisPesananOutlet, { type JenisPesananOutletData } from '@/Komponen/Kelo
 import KiosOutlet, { type KiosOutletData } from '@/Komponen/Kelola/KiosOutlet';
 import JamOperasionalOutlet, { type JamOperasionalOutletData } from '@/Komponen/Kelola/JamOperasionalOutlet';
 import LokasiAbsensiOutlet, { type LokasiAbsensiOutletData } from '@/Komponen/Kelola/LokasiAbsensiOutlet';
-import type { PesanSendiriOutlet } from '@/Komponen/Kelola/PesanSendiriMeja';
+import type { PesanSendiriOutlet, PesanSendiriQris } from '@/Komponen/Kelola/PesanSendiriMeja';
 import DialogFormulir from '@/Komponen/Tindakan/DialogFormulir';
 import TabelData from '@/Komponen/TabelData/TabelData';
 import type { KolomTabel } from '@/Komponen/TabelData/Tipe';
@@ -54,6 +54,7 @@ type PropsDetail = {
     ModeMeja: ModeMejaOutlet;
     BentukMeja: Pilihan[];
     PesanSendiri: PesanSendiriOutlet;
+    PesanSendiriQris?: PesanSendiriQris;
     JenisPesanan: JenisPesananOutletData;
     LokasiAbsensi: LokasiAbsensiOutletData;
     /** F-e: jam operasional per hari; opsional supaya halaman lama tanpa data jam tetap terbuka. */
@@ -72,6 +73,7 @@ export default function HalamanDetailOutlet({
     ModeMeja,
     BentukMeja,
     PesanSendiri,
+    PesanSendiriQris,
     JenisPesanan,
     LokasiAbsensi,
     JamOperasional,
@@ -202,6 +204,7 @@ export default function HalamanDetailOutlet({
                     bentuk={BentukMeja}
                     bolehKelola={bolehKelola && Outlet.Status === 'Aktif'}
                     pesanSendiri={PesanSendiri}
+                    pesanSendiriQris={PesanSendiriQris}
                 />
             ) : null}
 

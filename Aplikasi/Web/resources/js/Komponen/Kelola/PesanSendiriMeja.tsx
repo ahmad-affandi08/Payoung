@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
@@ -12,15 +12,26 @@ import { KunciKueri } from '@/Pustaka/KunciKueri';
 
 export type PesanSendiriOutlet = { FiturAktif: boolean; Aktif: boolean };
 
+/** D-338: satu hal yang masih kurang sebelum QRIS bisa dipakai tamu, dengan tautan tempat memperbaikinya. */
+export type HambatanQris = { Kode: string; Pesan: string; Tautan: string };
+
+/** D-338: sakelar "Bayar sekarang lewat QRIS" (satu untuk seluruh usaha) dan sebab QRIS belum bisa dipakai. */
+export type PesanSendiriQris = { Aktif: boolean; Hambatan: HambatanQris[]; BolehUbah: boolean };
+
 type QrMeja = { NamaMeja: string; Url: string; QrSvg: string };
 
-type PropsSakelar = { alamatOutlet: string; pesanSendiri: PesanSendiriOutlet; bolehKelola: boolean };
+type PropsSakelar = {
+    alamatOutlet: string;
+    pesanSendiri: PesanSendiriOutlet;
+    bolehKelola: boolean;
+    qris?: PesanSendiriQris | undefined;
+};
 
 /**
  * F-17: sakelar pesan sendiri lewat QR meja per outlet. Menghidupkan butuh fitur paket `kanal.self-order` (add-on);
  * tanpa fitur tombol hidupkan nonaktif dengan penjelasan, mematikan tetap bisa.
  */
-export function SakelarPesanSendiri({ alamatOutlet, pesanSendiri, bolehKelola }: PropsSakelar) {
+export function SakelarPesanSendiri({ alamatOutlet, pesanSendiri, bolehKelola, qris }: PropsSakelar) {
     const [memproses, AturMemproses] = useState(false);
     const bolehHidupkan = pesanSendiri.FiturAktif;
 
@@ -74,7 +85,85 @@ export function SakelarPesanSendiri({ alamatOutlet, pesanSendiri, bolehKelola }:
                     pesanan dari QR meja.
                 </Pemberitahuan>
             )}
+            {qris && bolehHidupkan ? <SakelarQrisMeja alamatOutlet={alamatOutlet} qris={qris} /> : null}
         </div>
+    );
+}
+
+/**
+ * D-338: "Bayar QRIS dari HP" untuk pesan dari meja. Tombol QRIS di halaman tamu butuh sakelar ini, gerbang pembayaran
+ * aktif, dan metode QRIS dinamis aktif. Yang masih kurang dijelaskan di sini lengkap dengan tautannya, jadi pengelola
+ * tidak perlu menebak kenapa tombolnya tidak muncul.
+ */
+function SakelarQrisMeja({ alamatOutlet, qris }: { alamatOutlet: string; qris: PesanSendiriQris }) {
+    const [memproses, AturMemproses] = useState(false);
+    const siap = qris.Hambatan.length === 0;
+
+    const Ubah = (aktif: boolean) => {
+        AturMemproses(true);
+        router.post(
+            `${alamatOutlet}/pesan-sendiri/qris`,
+            { Aktif: aktif },
+            { preserveScroll: true, onFinish: () => AturMemproses(false) },
+        );
+    };
+
+    return (
+        <section aria-label="Bayar QRIS dari HP" className="flex flex-col gap-2 border-t border-garis pt-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                    <h4 className="text-isi font-semibold text-teks-utama">Bayar QRIS dari HP</h4>
+                    {qris.Aktif ? (
+                        siap ? (
+                            <LabelStatus jenis="sukses" teks="Aktif" />
+                        ) : (
+                            <LabelStatus jenis="peringatan" teks="Aktif, belum siap" />
+                        )
+                    ) : (
+                        <LabelStatus jenis="netral" teks="Mati" />
+                    )}
+                </div>
+                {qris.BolehUbah ? (
+                    qris.Aktif ? (
+                        <Tombol varian="sekunder" memproses={memproses} onClick={() => Ubah(false)}>
+                            Matikan QRIS dari HP
+                        </Tombol>
+                    ) : (
+                        <Tombol memproses={memproses} disabled={!siap} onClick={() => Ubah(true)}>
+                            Hidupkan QRIS dari HP
+                        </Tombol>
+                    )
+                ) : null}
+            </div>
+            <p className="text-keterangan text-teks-sekunder">
+                Tamu bisa membayar pesanannya sendiri lewat QRIS tanpa menunggu kasir. Pengaturan ini berlaku juga untuk
+                kios dan toko online.
+            </p>
+            {siap ? null : (
+                <Pemberitahuan
+                    jenis={qris.Aktif ? 'peringatan' : 'info'}
+                    judul={
+                        qris.Aktif ? 'QRIS aktif tetapi belum bisa dipakai tamu' : 'Siapkan dulu sebelum menghidupkan'
+                    }
+                >
+                    <ul className="flex flex-col gap-1">
+                        {qris.Hambatan.map((hambatan) => (
+                            <li key={hambatan.Kode}>
+                                {hambatan.Pesan}{' '}
+                                <Link href={hambatan.Tautan} className="font-semibold underline">
+                                    Buka halamannya
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </Pemberitahuan>
+            )}
+            {qris.BolehUbah ? null : (
+                <p className="text-keterangan text-teks-sekunder">
+                    Hanya pengguna berizin toko online yang bisa mengubah pengaturan ini.
+                </p>
+            )}
+        </section>
     );
 }
 

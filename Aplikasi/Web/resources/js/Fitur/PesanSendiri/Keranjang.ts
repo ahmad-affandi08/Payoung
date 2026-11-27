@@ -82,18 +82,90 @@ export function SimpanKeranjang(token: string, keranjang: BarisKeranjang[]): voi
     TulisJson(KunciKeranjang(token), keranjang);
 }
 
-/** Uuid pesanan yang sudah dikirim dari peramban ini untuk meja ini (terbaru di depan, maks. 5). */
-export function BacaRiwayatPesanan(token: string): string[] {
-    const nilai = BacaJson(KunciRiwayat(token));
+/** Berapa lama kartu "Pesanan terakhir" boleh bertahan di HP tamu (D-338). Cukup untuk makan dan membayar. */
+export const BATAS_RIWAYAT_MS = 6 * 60 * 60 * 1000;
+const BATAS_RIWAYAT = 5;
 
-    return Array.isArray(nilai) ? nilai.filter((u): u is string => typeof u === 'string').slice(0, 5) : [];
+type CatatanRiwayat = {
+    Uuid: string;
+    /** Waktu pesanan dikirim dari HP ini (ms sejak epoch). */
+    Waktu: number;
+    /** Sudah ditampilkan dalam keadaan akhir (dibayar, ditolak, kedaluwarsa), hilang pada pembukaan berikutnya. */
+    Selesai?: boolean;
+};
+
+function CekCatatan(nilai: unknown): nilai is CatatanRiwayat {
+    if (typeof nilai !== 'object' || nilai === null) {
+        return false;
+    }
+
+    const c = nilai as Record<string, unknown>;
+
+    return (
+        typeof c.Uuid === 'string' &&
+        typeof c.Waktu === 'number' &&
+        Number.isFinite(c.Waktu) &&
+        (c.Selesai === undefined || typeof c.Selesai === 'boolean')
+    );
 }
 
-export function CatatRiwayatPesanan(token: string, uuid: string): string[] {
-    const riwayat = [uuid, ...BacaRiwayatPesanan(token).filter((u) => u !== uuid)].slice(0, 5);
-    TulisJson(KunciRiwayat(token), riwayat);
+/**
+ * Catatan riwayat yang masih berlaku, terbaru di depan. Format lama (daftar Uuid tanpa waktu) dibaca sebagai dikirim
+ * `sekarang`, jadi kartu lama tidak hilang mendadak tetapi juga tidak bertahan selamanya. Yang sudah lewat batas
+ * waktu, atau sudah ditandai selesai, dibuang dari penyimpanan.
+ */
+function BacaCatatan(token: string, sekarang: number): CatatanRiwayat[] {
+    const nilai = BacaJson(KunciRiwayat(token));
+    const mentah = Array.isArray(nilai) ? (nilai as unknown[]) : [];
+    const semua = mentah
+        .map((butir): CatatanRiwayat | null =>
+            typeof butir === 'string' ? { Uuid: butir, Waktu: sekarang } : CekCatatan(butir) ? butir : null,
+        )
+        .filter((c): c is CatatanRiwayat => c !== null);
+    const berlaku = semua
+        .filter((c) => c.Selesai !== true && sekarang - c.Waktu < BATAS_RIWAYAT_MS)
+        .slice(0, BATAS_RIWAYAT);
 
-    return riwayat;
+    if (mentah.length > 0 && (berlaku.length !== mentah.length || mentah.some((b) => typeof b === 'string'))) {
+        TulisJson(KunciRiwayat(token), berlaku);
+    }
+
+    return berlaku;
+}
+
+/** Uuid pesanan yang dikirim dari peramban ini untuk meja ini dan masih layak ditampilkan (terbaru di depan, maks. 5). */
+export function BacaRiwayatPesanan(token: string, sekarang: number = Date.now()): string[] {
+    return BacaCatatan(token, sekarang).map((c) => c.Uuid);
+}
+
+export function CatatRiwayatPesanan(token: string, uuid: string, sekarang: number = Date.now()): string[] {
+    const daftar = [
+        { Uuid: uuid, Waktu: sekarang },
+        ...BacaCatatan(token, sekarang).filter((c) => c.Uuid !== uuid),
+    ].slice(0, BATAS_RIWAYAT);
+    TulisJson(KunciRiwayat(token), daftar);
+
+    return daftar.map((c) => c.Uuid);
+}
+
+/** Tandai pesanan sudah ditampilkan dalam keadaan akhir: kartunya hilang pada pembukaan halaman berikutnya. */
+export function TandaiRiwayatSelesai(token: string, uuid: string, sekarang: number = Date.now()): void {
+    const daftar = BacaCatatan(token, sekarang);
+
+    if (daftar.some((c) => c.Uuid === uuid && c.Selesai !== true)) {
+        TulisJson(
+            KunciRiwayat(token),
+            daftar.map((c) => (c.Uuid === uuid ? { ...c, Selesai: true } : c)),
+        );
+    }
+}
+
+/** Buang satu pesanan dari riwayat (tamu menutup kartunya). Mengembalikan riwayat yang tersisa. */
+export function HapusRiwayatPesanan(token: string, uuid: string, sekarang: number = Date.now()): string[] {
+    const sisa = BacaCatatan(token, sekarang).filter((c) => c.Uuid !== uuid);
+    TulisJson(KunciRiwayat(token), sisa);
+
+    return sisa.map((c) => c.Uuid);
 }
 
 function SamaPilihan(a: string[], b: string[]): boolean {

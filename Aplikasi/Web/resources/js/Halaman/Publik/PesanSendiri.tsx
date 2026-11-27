@@ -10,6 +10,7 @@ import {
     WalletIcon,
     QrCodeIcon,
     WifiOffIcon,
+    XIcon,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from 'react';
 
@@ -30,10 +31,12 @@ import {
     BacaRiwayatPesanan,
     BATAS_JUMLAH,
     CatatRiwayatPesanan,
+    HapusRiwayatPesanan,
     HitungJumlahItem,
     PeriksaPilihan,
     SimpanKeranjang,
     TambahKeKeranjang,
+    TandaiRiwayatSelesai,
     UbahJumlah,
     type BarisKeranjang,
     type KelompokPilihanMenu,
@@ -123,10 +126,14 @@ type HasilHitung = {
 
 export type StatusPesanan = 'MenungguKonfirmasi' | 'Diterima' | 'Ditolak' | 'Kedaluwarsa';
 
+/** D-338: keadaan tagihan meja setelah kasir menerima pesanan. Null atau tidak ada = belum diterima atau server lama. */
+export type PembayaranPesanan = 'BelumDibayar' | 'Dibayar' | 'Dibatalkan';
+
 type PesananTamu = {
     Uuid: string;
     Nomor: string;
     Status: StatusPesanan;
+    Pembayaran?: PembayaranPesanan | null;
     Baris: { Uuid: string; NamaProduk: string; Jumlah: string; Pilihan: { Nama: string }[]; Catatan: string | null }[];
     Subtotal: string;
     Perkiraan?: PerkiraanTotal | null;
@@ -145,6 +152,7 @@ export class GalatPesanSendiri extends Error {
 }
 
 const JEDA_POLLING_MS = 5000;
+const JEDA_POLLING_BAYAR_MS = 15000;
 
 function CekNol(nilai: string | undefined): boolean {
     return nilai === undefined || /^-?0+(\.0+)?$/.test(nilai);
@@ -269,6 +277,43 @@ const infoStatus: Record<
         pesan: 'Pesanan tidak dikonfirmasi dalam 30 menit. Silakan pesan ulang atau panggil staf.',
     },
 };
+
+type InfoPesanan = {
+    jenis: 'sukses' | 'peringatan' | 'bahaya' | 'netral';
+    label: string;
+    pesan: string;
+    selesai: boolean;
+};
+
+/**
+ * Label, pesan, dan apakah pesanan sudah dalam keadaan akhir (D-338). Pesanan yang diterima kasir mengikuti keadaan
+ * tagihan mejanya: dibayar → "Sudah dibayar", dibatalkan → "Dibatalkan", selain itu masih "Diterima, bayar di kasir".
+ * Keadaan akhir (termasuk ditolak dan kedaluwarsa) membuat kartu "Pesanan terakhir" hilang pada pembukaan berikutnya.
+ */
+export function InfoPesananTamu(pesanan: Pick<PesananTamu, 'Status' | 'Pembayaran'>): InfoPesanan {
+    if (pesanan.Status === 'Diterima' && pesanan.Pembayaran === 'Dibayar') {
+        return {
+            jenis: 'sukses',
+            label: 'Sudah dibayar',
+            pesan: 'Pesanan sudah dibayar. Terima kasih sudah memesan!',
+            selesai: true,
+        };
+    }
+
+    if (pesanan.Status === 'Diterima' && pesanan.Pembayaran === 'Dibatalkan') {
+        return {
+            jenis: 'netral',
+            label: 'Dibatalkan',
+            pesan: 'Tagihan meja ini dibatalkan oleh kasir. Panggil staf bila ada yang keliru.',
+            selesai: true,
+        };
+    }
+
+    return {
+        ...infoStatus[pesanan.Status],
+        selesai: pesanan.Status !== 'MenungguKonfirmasi' && pesanan.Status !== 'Diterima',
+    };
+}
 
 /**
  * F-17 Self-Order QR Meja (X12, SLS-04): halaman publik ringan tanpa login. Menu per kategori → keranjang (disimpan di
@@ -438,6 +483,15 @@ function PemesananAktif({ alamat, token, menuAwal, daring, qris }: PropsPemesana
         );
     };
 
+    // Kartu "Pesanan terakhir" ditutup tamu, atau pesanannya sudah tidak dikenal server.
+    const TutupRiwayatTerakhir = () => {
+        const terakhir = riwayat[0];
+
+        if (terakhir !== undefined) {
+            AturRiwayat(HapusRiwayatPesanan(token, terakhir));
+        }
+    };
+
     if (bayarQris !== null) {
         return (
             <PanelBayarQris
@@ -468,6 +522,7 @@ function PemesananAktif({ alamat, token, menuAwal, daring, qris }: PropsPemesana
                     token={token}
                     uuid={riwayat[0]}
                     saatLihat={() => AturLihatStatus(riwayat[0] ?? null)}
+                    saatTutup={TutupRiwayatTerakhir}
                 />
             ) : null}
 
@@ -1109,8 +1164,16 @@ function useStatusPesanan(alamat: string, token: string, uuid: string) {
     return useQuery({
         queryKey: KunciKueri.PesanSendiri.Status(token, uuid),
         queryFn: ({ signal }) => KirimJson<PesananTamu>(`${alamat}/pesanan/${uuid}`, undefined, signal),
-        refetchInterval: (kueri) =>
-            kueri.state.data && kueri.state.data.Status !== 'MenungguKonfirmasi' ? false : JEDA_POLLING_MS,
+        // Terus dipantau sampai ada keputusan kasir, lalu (pelan) sampai tagihan meja dibayar atau dibatalkan.
+        refetchInterval: (kueri) => {
+            const data = kueri.state.data;
+
+            if (!data || data.Status === 'MenungguKonfirmasi') {
+                return JEDA_POLLING_MS;
+            }
+
+            return data.Status === 'Diterima' && data.Pembayaran === 'BelumDibayar' ? JEDA_POLLING_BAYAR_MS : false;
+        },
         retry: false,
     });
 }
@@ -1120,32 +1183,66 @@ function RingkasanPesananTerakhir({
     token,
     uuid,
     saatLihat,
+    saatTutup,
 }: {
     alamat: string;
     token: string;
     uuid: string;
     saatLihat: () => void;
+    saatTutup: () => void;
 }) {
     const status = useStatusPesanan(alamat, token, uuid);
+    const info = status.data ? InfoPesananTamu(status.data) : null;
+    const selesai = info?.selesai === true;
+    // Pesanan yang tidak dikenal lagi (meja diganti, data dibersihkan) tidak perlu diingat.
+    const hilang = status.error instanceof GalatPesanSendiri && status.error.status === 404;
 
-    if (!status.data) {
+    // Keadaan akhir cukup ditampilkan sekali: pada pembukaan halaman berikutnya kartunya sudah tidak ada.
+    useEffect(() => {
+        if (selesai) {
+            TandaiRiwayatSelesai(token, uuid);
+        }
+    }, [selesai, token, uuid]);
+
+    useEffect(() => {
+        if (hilang) {
+            saatTutup();
+        }
+    }, [hilang, saatTutup]);
+
+    if (!status.data || info === null) {
         return null;
     }
-
-    const info = infoStatus[status.data.Status];
 
     return (
         <section
             aria-label="Pesanan terakhir"
             className="flex flex-wrap items-center justify-between gap-2 rounded-3xl bg-permukaan p-4"
         >
-            <div className="flex flex-col gap-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="font-mono text-label">{status.data.Nomor}</p>
-                <LabelStatus jenis={info.jenis} teks={info.label} />
+                <div className="flex flex-wrap items-center gap-2">
+                    <LabelStatus jenis={info.jenis} teks={info.label} />
+                    {selesai && status.data.Status === 'Diterima' ? (
+                        <span className="text-keterangan text-teks-sekunder">
+                            {status.data.Pembayaran === 'Dibayar' ? 'Terima kasih!' : 'Meja ini sudah selesai.'}
+                        </span>
+                    ) : null}
+                </div>
             </div>
-            <Tombol varian="sekunder" onClick={saatLihat}>
-                Lihat status
-            </Tombol>
+            <div className="flex items-center gap-2">
+                <Tombol varian="sekunder" onClick={saatLihat}>
+                    Lihat status
+                </Tombol>
+                <button
+                    type="button"
+                    aria-label="Tutup pesanan terakhir"
+                    onClick={saatTutup}
+                    className="grid size-11 place-items-center rounded-full text-teks-sekunder hover:bg-permukaan-redup focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none"
+                >
+                    <XIcon aria-hidden="true" className="size-5" />
+                </button>
+            </div>
         </section>
     );
 }
@@ -1154,6 +1251,14 @@ type PropsPanelStatus = { alamat: string; token: string; uuid: string; saatKemba
 
 function PanelStatusPesanan({ alamat, token, uuid, saatKembali }: PropsPanelStatus) {
     const status = useStatusPesanan(alamat, token, uuid);
+    const selesai = status.data ? InfoPesananTamu(status.data).selesai : false;
+
+    // Tamu sudah melihat keadaan akhirnya: kartu "Pesanan terakhir" tidak perlu muncul lagi di pembukaan berikutnya.
+    useEffect(() => {
+        if (selesai) {
+            TandaiRiwayatSelesai(token, uuid);
+        }
+    }, [selesai, token, uuid]);
 
     if (status.isPending) {
         return (
@@ -1181,7 +1286,7 @@ function PanelStatusPesanan({ alamat, token, uuid, saatKembali }: PropsPanelStat
     }
 
     const pesanan = status.data;
-    const info = infoStatus[pesanan.Status];
+    const info = InfoPesananTamu(pesanan);
 
     return (
         <section aria-label={`Status pesanan ${pesanan.Nomor}`} className="flex flex-col gap-4">

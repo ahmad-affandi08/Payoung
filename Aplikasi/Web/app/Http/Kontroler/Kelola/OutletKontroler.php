@@ -11,9 +11,11 @@ use App\Domain\Organisasi\Aksi\AturLokasiAbsensiOutlet;
 use App\Domain\Organisasi\Aksi\SimpanOutlet;
 use App\Domain\Organisasi\Aksi\UbahStatusOutlet;
 use App\Domain\Organisasi\Enum\BentukMeja;
+use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Enum\JenisGudang;
 use App\Domain\Organisasi\Enum\JenisPesanan;
 use App\Domain\Organisasi\Enum\StatusOrganisasi;
+use App\Domain\Organisasi\Kueri\AksesPengguna;
 use App\Domain\Organisasi\Kueri\JenisPesananOutlet;
 use App\Domain\Organisasi\Kueri\MejaOutlet;
 use App\Domain\Organisasi\Kueri\PemakaianBatasOrganisasi;
@@ -22,6 +24,7 @@ use App\Domain\Organisasi\Layanan\PenjagaModeMeja;
 use App\Domain\Organisasi\Model\Gudang;
 use App\Domain\Organisasi\Model\Merek;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
 use App\Domain\Referensi\Enum\ZonaWaktu;
 use App\Domain\Referensi\Kueri\WilayahKota;
@@ -118,7 +121,7 @@ final class OutletKontroler extends DasarKelolaKontroler
             : "Jam operasional {$baris->Nama} disimpan.");
     }
 
-    public function Detail(string $outlet, WilayahKota $wilayahKota, MejaOutlet $mejaOutlet, PenjagaModeMeja $modeMeja, PemeriksaFiturTenant $fitur, JenisPesananOutlet $jenisPesanan, ProfilTenant $profil): Response
+    public function Detail(string $outlet, WilayahKota $wilayahKota, MejaOutlet $mejaOutlet, PenjagaModeMeja $modeMeja, PemeriksaFiturTenant $fitur, JenisPesananOutlet $jenisPesanan, ProfilTenant $profil, KesiapanQrisOnline $qris, AksesPengguna $akses): Response
     {
         $baris = $this->CariOutlet($outlet);
 
@@ -186,6 +189,12 @@ final class OutletKontroler extends DasarKelolaKontroler
             'PesanSendiri' => [
                 'FiturAktif' => $fitur->CekAktif($baris->IdTenant, PemeriksaFiturTenant::KUNCI_PESAN_SENDIRI),
                 'Aktif' => $baris->PesanSendiriAktif,
+            ],
+            // D-338: "Bayar sekarang lewat QRIS" (satu sakelar untuk seluruh usaha) dan kenapa QRIS belum bisa dipakai tamu.
+            'PesanSendiriQris' => [
+                'Aktif' => PengaturanTokoOnline::query()->value('QrisAktif') === true,
+                'Hambatan' => $qris->CariHambatan(),
+                'BolehUbah' => $akses->CekIzin($this->IdTenant(), $this->Pelaku()->Id, IzinTenant::TokoOnlineKelola),
             ],
             // F-17 bagian 4: kios pesan sendiri di layar sentuh outlet (tautan rahasia per outlet).
             'Kios' => [

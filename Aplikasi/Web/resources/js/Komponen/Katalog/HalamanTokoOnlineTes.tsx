@@ -68,6 +68,35 @@ describe('Toko online › Pengaturan toko', () => {
     });
 });
 
+describe('D-338 QRIS pembeli', () => {
+    beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
+
+    it('sebab QRIS belum bisa dipakai tampil dengan tautan perbaikan. Tanpa sebab tidak ada peringatan tambahan', () => {
+        RenderUji(
+            <HalamanTokoOnline
+                {...propsSiap}
+                QrisHambatan={[
+                    {
+                        Kode: 'MetodeQrisBelumAktif',
+                        Pesan: 'Belum ada metode QRIS dinamis yang aktif.',
+                        Tautan: '/kelola/panduan-awal/metode-pembayaran',
+                    },
+                ]}
+            />,
+        );
+
+        expect(screen.getByText('QRIS belum bisa dipakai pembeli')).toBeTruthy();
+        expect(screen.getByText(/Belum ada metode QRIS dinamis yang aktif/)).toBeTruthy();
+        expect(screen.getByRole('link', { name: 'Buka halamannya' }).getAttribute('href')).toBe(
+            '/kelola/panduan-awal/metode-pembayaran',
+        );
+        cleanup();
+
+        RenderUji(<HalamanTokoOnline {...propsSiap} QrisHambatan={[]} />);
+        expect(screen.queryByText('QRIS belum bisa dipakai pembeli')).toBeNull();
+    });
+});
+
 describe('D-298 tombol Buka toko', () => {
     beforeEach(() => AturHalamanUji({}, '/kelola/toko-online'));
     afterEach(cleanup);

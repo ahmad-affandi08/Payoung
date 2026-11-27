@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Penjualan\Layanan;
 
 use App\Domain\Integrasi\GerbangPembayaran\PembuatGerbangPembayaran;
+use App\Domain\Integrasi\Layanan\InfoGerbangPembayaran;
 use App\Domain\Penjualan\Enum\JenisMetodePembayaran;
 use App\Domain\Penjualan\Model\MetodePembayaran;
 
@@ -21,7 +22,36 @@ final class KesiapanQrisOnline
 
     public function CekSiap(): bool
     {
-        return $this->gerbang->AmbilAktifTenant() !== null
-            && MetodePembayaran::query()->where('Jenis', JenisMetodePembayaran::QrisDinamis->value)->where('Aktif', true)->exists();
+        return $this->CariHambatan() === [];
+    }
+
+    /**
+     * Kenapa jalur QRIS belum bisa menerbitkan tagihan (D-338), berteks untuk ditampilkan ke pengelola. Kosong = siap.
+     * Dua syarat yang berubah di luar sakelar toko: gerbang pembayaran toko aktif, dan ada metode bayar QRIS dinamis
+     * yang aktif. Tamu yang melihat tombol QRIS hilang tidak tahu sebabnya, jadi pengelola diberi tahu di sini.
+     *
+     * @return list<array{Kode: string, Pesan: string, Tautan: string}>
+     */
+    public function CariHambatan(): array
+    {
+        $hambatan = [];
+
+        if ($this->gerbang->AmbilAktifTenant() === null) {
+            $hambatan[] = [
+                'Kode' => 'GerbangBelumAktif',
+                'Pesan' => 'Gerbang pembayaran toko belum aktif. Aktifkan dulu di Pengaturan › '.InfoGerbangPembayaran::AmbilNamaMenu().'.',
+                'Tautan' => InfoGerbangPembayaran::AmbilTautan(),
+            ];
+        }
+
+        if (! MetodePembayaran::query()->where('Jenis', JenisMetodePembayaran::QrisDinamis->value)->where('Aktif', true)->exists()) {
+            $hambatan[] = [
+                'Kode' => 'MetodeQrisBelumAktif',
+                'Pesan' => 'Belum ada metode pembayaran QRIS dinamis yang aktif. Buat atau aktifkan di Metode pembayaran.',
+                'Tautan' => InfoGerbangPembayaran::TAUTAN_METODE,
+            ];
+        }
+
+        return $hambatan;
     }
 }

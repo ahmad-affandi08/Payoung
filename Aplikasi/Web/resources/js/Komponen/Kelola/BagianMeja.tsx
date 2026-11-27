@@ -15,7 +15,7 @@ import { FormatRupiah } from '@/Pustaka/Format';
 import type { Pilihan, StatusOrganisasi } from '@/Tipe/Organisasi';
 
 import DenahMeja from './DenahMeja';
-import { DialogQrMeja, SakelarPesanSendiri, type PesanSendiriOutlet } from './PesanSendiriMeja';
+import { DialogQrMeja, SakelarPesanSendiri, type PesanSendiriOutlet, type PesanSendiriQris } from './PesanSendiriMeja';
 
 export type AreaMeja = {
     Uuid: string;
@@ -54,6 +54,8 @@ type PropsBagianMeja = {
     bolehKelola: boolean;
     /** F-17: sakelar & QR pesan sendiri. */
     pesanSendiri: PesanSendiriOutlet;
+    /** D-338: sakelar dan kesiapan QRIS dari meja. Tanpa ini bagian QRIS tidak tampil. */
+    pesanSendiriQris?: PesanSendiriQris | undefined;
 };
 
 function LabelStatusOrganisasi({ status }: { status: StatusOrganisasi }) {
@@ -77,7 +79,14 @@ function TindakanStatus(alamat: string, status: StatusOrganisasi) {
  * F-10a: area & meja outlet untuk mode meja. Tampil bila fitur mode meja aktif di outlet atau sudah ada data meja
  * (data lama tetap bisa diubah/diarsipkan setelah turun paket; menambah butuh fitur aktif).
  */
-export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola, pesanSendiri }: PropsBagianMeja) {
+export default function BagianMeja({
+    alamatOutlet,
+    modeMeja,
+    bentuk,
+    bolehKelola,
+    pesanSendiri,
+    pesanSendiriQris,
+}: PropsBagianMeja) {
     const [suntingArea, AturSuntingArea] = useState<AreaMeja | 'baru' | null>(null);
     const [suntingMeja, AturSuntingMeja] = useState<Meja | 'baru' | null>(null);
     const [banyakMeja, AturBanyakMeja] = useState(false);
@@ -198,7 +207,12 @@ export default function BagianMeja({ alamatOutlet, modeMeja, bentuk, bolehKelola
                 Meja dipilih kasir saat membuka pesanan makan di tempat. Area, misal Indoor atau Teras, mengelompokkan
                 meja.
             </p>
-            <SakelarPesanSendiri alamatOutlet={alamatOutlet} pesanSendiri={pesanSendiri} bolehKelola={bolehKelola} />
+            <SakelarPesanSendiri
+                alamatOutlet={alamatOutlet}
+                pesanSendiri={pesanSendiri}
+                bolehKelola={bolehKelola}
+                qris={pesanSendiriQris}
+            />
             {qrMeja !== null ? (
                 <DialogQrMeja
                     key={qrMeja.Uuid}

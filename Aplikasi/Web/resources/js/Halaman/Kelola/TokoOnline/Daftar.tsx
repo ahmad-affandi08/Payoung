@@ -93,6 +93,8 @@ type Props = {
     /** D-110: QR (SVG) tautan toko untuk dibagikan atau dicetak. */
     QrSvg: string;
     AkunPembeliTersedia: boolean;
+    /** D-338: sebab QRIS online belum bisa dipakai pembeli (gerbang atau metode QRIS dinamis belum aktif). */
+    QrisHambatan?: { Kode: string; Pesan: string; Tautan: string }[];
     Notifikasi: { Siap: boolean; Alasan: string | null; GagalBulanIni: number };
     Pengaturan: {
         Aktif: boolean;
@@ -280,6 +282,25 @@ function FormPengaturan({ props }: { props: Props }) {
                     saatBerubah={(v) => form.setData('QrisAktif', v)}
                 />
             </div>
+            {(props.QrisHambatan ?? []).length > 0 ? (
+                <div className="flex flex-col gap-1 sm:col-span-2">
+                    <Pemberitahuan jenis="peringatan" judul="QRIS belum bisa dipakai pembeli">
+                        <ul className="flex flex-col gap-1">
+                            {(props.QrisHambatan ?? []).map((hambatan) => (
+                                <li key={hambatan.Kode}>
+                                    {hambatan.Pesan}{' '}
+                                    <Link href={hambatan.Tautan} className="font-semibold underline">
+                                        Buka halamannya
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </Pemberitahuan>
+                    <p className="text-keterangan text-teks-sekunder">
+                        Pilihan QRIS juga berlaku untuk pesan dari meja dan kios.
+                    </p>
+                </div>
+            ) : null}
             <div className="flex flex-col gap-1 sm:col-span-2">
                 {whatsappTersedia ? (
                     <>

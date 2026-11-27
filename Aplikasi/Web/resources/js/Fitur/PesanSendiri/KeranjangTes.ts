@@ -5,11 +5,14 @@ import {
     BacaKeranjang,
     BacaRiwayatPesanan,
     BATAS_BARIS,
+    BATAS_RIWAYAT_MS,
     CatatRiwayatPesanan,
+    HapusRiwayatPesanan,
     HitungJumlahItem,
     PeriksaPilihan,
     SimpanKeranjang,
     TambahKeKeranjang,
+    TandaiRiwayatSelesai,
     UbahJumlah,
     type BarisKeranjang,
     type KelompokPilihanMenu,
@@ -97,5 +100,56 @@ describe('Keranjang pesan sendiri (F-17)', () => {
 
         ['U1', 'U2', 'U3', 'U4', 'U5', 'U6', 'U2'].forEach((u) => CatatRiwayatPesanan('TOKEN-7', u));
         expect(BacaRiwayatPesanan('TOKEN-7')).toEqual(['U2', 'U6', 'U5', 'U4', 'U3']);
+    });
+
+    describe('D-338 riwayat pesanan berstempel waktu', () => {
+        const kunci = 'pesan-sendiri:TOKEN-7:pesanan';
+        const T0 = 1_800_000_000_000;
+
+        it('yang lewat 6 jam hilang dari bacaan dan dari penyimpanan, yang lebih baru tetap', () => {
+            CatatRiwayatPesanan('TOKEN-7', 'LAMA', T0);
+            CatatRiwayatPesanan('TOKEN-7', 'BARU', T0 + BATAS_RIWAYAT_MS - 60_000);
+
+            expect(BacaRiwayatPesanan('TOKEN-7', T0 + BATAS_RIWAYAT_MS - 1)).toEqual(['BARU', 'LAMA']);
+            expect(BacaRiwayatPesanan('TOKEN-7', T0 + BATAS_RIWAYAT_MS)).toEqual(['BARU']);
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([
+                { Uuid: 'BARU', Waktu: T0 + BATAS_RIWAYAT_MS - 60_000 },
+            ]);
+        });
+
+        it('ditandai selesai: masih dibaca pada sesi itu, tetapi hilang pada pembacaan berikutnya', () => {
+            CatatRiwayatPesanan('TOKEN-7', 'U1', T0);
+            const sebelum = BacaRiwayatPesanan('TOKEN-7', T0 + 1000);
+            TandaiRiwayatSelesai('TOKEN-7', 'U1', T0 + 2000);
+
+            expect(sebelum).toEqual(['U1']);
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([
+                { Uuid: 'U1', Waktu: T0, Selesai: true },
+            ]);
+            expect(BacaRiwayatPesanan('TOKEN-7', T0 + 3000)).toEqual([]);
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([]);
+        });
+
+        it('format lama (daftar Uuid) dibaca sebagai baru dikirim lalu disimpan ulang bertanda waktu. Isi rusak diabaikan', () => {
+            window.localStorage.setItem(kunci, JSON.stringify(['A', 'B', 7, { Uuid: 'C' }]));
+
+            expect(BacaRiwayatPesanan('TOKEN-7', T0)).toEqual(['A', 'B']);
+            expect(JSON.parse(window.localStorage.getItem(kunci) ?? '[]')).toEqual([
+                { Uuid: 'A', Waktu: T0 },
+                { Uuid: 'B', Waktu: T0 },
+            ]);
+            window.localStorage.setItem(kunci, '{bukan json');
+            expect(BacaRiwayatPesanan('TOKEN-7', T0)).toEqual([]);
+        });
+
+        it('hapus satu pesanan mengembalikan sisanya. Mencatat pesanan baru melewati yang sudah selesai', () => {
+            CatatRiwayatPesanan('TOKEN-7', 'U1', T0);
+            CatatRiwayatPesanan('TOKEN-7', 'U2', T0 + 1);
+            TandaiRiwayatSelesai('TOKEN-7', 'U1', T0 + 2);
+
+            expect(CatatRiwayatPesanan('TOKEN-7', 'U3', T0 + 3)).toEqual(['U3', 'U2']);
+            expect(HapusRiwayatPesanan('TOKEN-7', 'U3', T0 + 4)).toEqual(['U2']);
+            expect(HapusRiwayatPesanan('TOKEN-7', 'TIDAK-ADA', T0 + 5)).toEqual(['U2']);
+        });
     });
 });

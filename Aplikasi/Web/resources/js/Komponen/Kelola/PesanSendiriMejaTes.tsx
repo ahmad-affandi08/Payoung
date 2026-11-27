@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import HalamanQrMeja from '@/Halaman/Kelola/Outlet/QrMeja';
@@ -66,6 +66,79 @@ describe('F-17 QR pesan sendiri di halaman outlet', () => {
             true,
         );
         expect(screen.getByText('Fitur Self-order QR belum aktif')).toBeTruthy();
+    });
+
+    describe('D-338 Bayar QRIS dari HP', () => {
+        const gerbang = {
+            Kode: 'GerbangBelumAktif',
+            Pesan: 'Gerbang pembayaran toko belum aktif.',
+            Tautan: '/kelola/pembayaran/gerbang',
+        };
+        const metode = {
+            Kode: 'MetodeQrisBelumAktif',
+            Pesan: 'Belum ada metode QRIS dinamis yang aktif.',
+            Tautan: '/kelola/panduan-awal/metode-pembayaran',
+        };
+        const Tampil = (qris: { Aktif: boolean; Hambatan: (typeof gerbang)[]; BolehUbah: boolean } | undefined) =>
+            RenderUji(
+                <BagianMeja
+                    alamatOutlet="/kelola/outlet/O-1"
+                    modeMeja={modeMeja}
+                    bentuk={[]}
+                    bolehKelola
+                    pesanSendiri={{ FiturAktif: true, Aktif: true }}
+                    pesanSendiriQris={qris}
+                />,
+            );
+
+        it('belum siap: sebab ditulis dengan tautan perbaikannya, dan tombol hidupkan nonaktif', () => {
+            Tampil({ Aktif: false, Hambatan: [gerbang, metode], BolehUbah: true });
+
+            expect(screen.getByRole('heading', { name: 'Bayar QRIS dari HP' })).toBeTruthy();
+            expect(screen.getByText('Siapkan dulu sebelum menghidupkan')).toBeTruthy();
+            expect(screen.getByText(/Gerbang pembayaran toko belum aktif/)).toBeTruthy();
+            expect(screen.getAllByRole('link', { name: 'Buka halamannya' }).map((a) => a.getAttribute('href'))).toEqual(
+                ['/kelola/pembayaran/gerbang', '/kelola/panduan-awal/metode-pembayaran'],
+            );
+            expect((screen.getByRole('button', { name: 'Hidupkan QRIS dari HP' }) as HTMLButtonElement).disabled).toBe(
+                true,
+            );
+        });
+
+        it('siap: tombol hidupkan mengirim POST ke rute QRIS. Setelah aktif tersedia tombol matikan', () => {
+            Tampil({ Aktif: false, Hambatan: [], BolehUbah: true });
+            fireEvent.click(screen.getByRole('button', { name: 'Hidupkan QRIS dari HP' }));
+            expect(tiruanRouter.post).toHaveBeenCalledWith(
+                '/kelola/outlet/O-1/pesan-sendiri/qris',
+                { Aktif: true },
+                expect.anything(),
+            );
+            cleanup();
+
+            Tampil({ Aktif: true, Hambatan: [], BolehUbah: true });
+            expect(within(screen.getByRole('region', { name: 'Bayar QRIS dari HP' })).getByText('Aktif')).toBeTruthy();
+            fireEvent.click(screen.getByRole('button', { name: 'Matikan QRIS dari HP' }));
+            expect(tiruanRouter.post).toHaveBeenCalledWith(
+                '/kelola/outlet/O-1/pesan-sendiri/qris',
+                { Aktif: false },
+                expect.anything(),
+            );
+        });
+
+        it('aktif tetapi belum siap diperingatkan. Tanpa izin toko online tidak ada tombol', () => {
+            Tampil({ Aktif: true, Hambatan: [metode], BolehUbah: false });
+
+            expect(screen.getByText('Aktif, belum siap')).toBeTruthy();
+            expect(screen.getByText('QRIS aktif tetapi belum bisa dipakai tamu')).toBeTruthy();
+            expect(screen.queryByRole('button', { name: /QRIS dari HP/ })).toBeNull();
+            expect(screen.getByText(/Hanya pengguna berizin toko online/)).toBeTruthy();
+        });
+
+        it('tanpa data QRIS dari server (halaman lama) bagian ini tidak tampil', () => {
+            Tampil(undefined);
+
+            expect(screen.queryByRole('heading', { name: 'Bayar QRIS dari HP' })).toBeNull();
+        });
     });
 
     it('aksi baris "QR pesan sendiri" memuat QR & URL. Buat ulang minta konfirmasi lalu POST', async () => {

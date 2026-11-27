@@ -19,6 +19,7 @@ use App\Domain\Organisasi\Layanan\PenyediaTokenPesanSendiri;
 use App\Domain\Organisasi\Model\AreaMeja;
 use App\Domain\Organisasi\Model\Meja;
 use App\Domain\Organisasi\Model\Outlet;
+use App\Domain\Penjualan\Aksi\AturQrisPesananOnline;
 use App\Domain\Tenant\Kueri\ProfilTenant;
 use App\Domain\Tenant\Layanan\PemeriksaFiturTenant;
 use App\Http\Permintaan\Kelola\AturPesanSendiriOutletPermintaan;
@@ -134,6 +135,17 @@ final class MejaKontroler extends DasarKelolaKontroler
         return back()->with('Kilat', $baris->PesanSendiriAktif
             ? "Pesan sendiri lewat QR meja aktif di {$baris->Nama}."
             : "Pesan sendiri lewat QR meja dimatikan di {$baris->Nama}.");
+    }
+
+    /** D-338: sakelar "Bayar QRIS dari HP" (satu untuk seluruh usaha) dari halaman meja. Izin toko online. */
+    public function AturQrisPesanSendiri(string $outlet, AturPesanSendiriOutletPermintaan $permintaan, AturQrisPesananOnline $atur): RedirectResponse
+    {
+        $this->CariOutlet($outlet);
+        $aktif = $atur->Jalankan($permintaan->boolean('Aktif'), $this->Pelaku()->Id);
+
+        return back()->with('Kilat', $aktif
+            ? 'Bayar QRIS dari HP aktif untuk pesan dari meja, kios, dan toko online.'
+            : 'Bayar QRIS dari HP dimatikan. Tamu membayar di kasir.');
     }
 
     public function Qr(string $outlet, string $meja, PenyediaTokenPesanSendiri $token, PembuatQrMeja $qr, ProfilTenant $profil): JsonResponse

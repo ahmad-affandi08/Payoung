@@ -26,6 +26,7 @@ use App\Domain\Penjualan\Aksi\SimpanZonaPengiriman;
 use App\Domain\Penjualan\Aksi\UbahStatusPesananOnline;
 use App\Domain\Penjualan\Enum\StatusPesananOnline;
 use App\Domain\Penjualan\Kueri\KesiapanNotifikasiPesananOnline;
+use App\Domain\Penjualan\Layanan\KesiapanQrisOnline;
 use App\Domain\Penjualan\Layanan\PenentuAkunTokoOnline;
 use App\Domain\Penjualan\Layanan\PenentuKonteksTokoOnline;
 use App\Domain\Penjualan\Model\PengaturanTokoOnline;
@@ -63,6 +64,8 @@ final class TokoOnlineKontroler extends DasarKelolaKontroler
             // D-110: QR tautan toko untuk dibagikan atau dicetak.
             'QrSvg' => $qr->BuatSvg(url('/'.$profil->AmbilSlug($this->IdTenant()))),
             'Pengaturan' => $atur->only(['Aktif', 'BayarSaatAmbilAktif', 'CodAktif', 'QrisAktif', 'AkunPelangganAktif', 'NotifikasiWhatsappAktif', 'MinimalPesanan', 'MenitKedaluwarsa', 'PesanTutup']),
+            // D-338: sebab QRIS online belum bisa dipakai pembeli (gerbang atau metode QRIS dinamis belum aktif).
+            'QrisHambatan' => app(KesiapanQrisOnline::class)->CariHambatan(),
             // Peringatan di sakelar notifikasi WhatsApp: kuota 0 atau WhatsApp belum tersambung membuat pesan gagal diam-diam.
             'Notifikasi' => $kesiapanNotifikasi->Ambil($this->IdTenant()),
             // Sakelar akun pembeli hanya berarti bila platform punya WhatsApp aktif (kode masuk dikirim lewat sana).
