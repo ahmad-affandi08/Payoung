@@ -135,6 +135,34 @@ describe('penutupan absensi yang lupa keluar', function (): void {
             ->and($absensi->refresh()->KeluarOtomatis)->toBeTrue();
     });
 
+    it('terbuka lebih dari 16 jam dan batas lewat: langsung ditutup di batas tanpa menunggu masa tunggu (masuk pagi sekali, besoknya tidak menemukan catatan lama)', function (): void {
+        [, , $pagi] = SiapkanAbsensiTerbuka($this, '2026-10-05 04:39', null);
+        $penutup = app(PenutupAbsensiOtomatis::class);
+
+        // Sebelum batas 23.59 belum ada yang ditutup.
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-05 23:58:00')))->toBe(0);
+
+        // Lewat 23.59: sudah terbuka 19 jam lebih, ditutup tanpa menunggu 5 jam, jam keluar tetap 23.59.
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 00:05:00')))->toBe(1);
+        $pagi->refresh();
+
+        expect($pagi->KeluarPada?->toIso8601ZuluString())->toBe(WibUtcTutup('2026-10-05 23:59:00')->toIso8601ZuluString())
+            ->and($pagi->KeluarOtomatis)->toBeTrue()
+            ->and($pagi->PerluDicek)->toBeTrue();
+    });
+
+    it('masuk siang tanpa jadwal tetap diberi masa tunggu lembur: belum 16 jam saat lewat tengah malam', function (): void {
+        [, , $siang] = SiapkanAbsensiTerbuka($this, '2026-10-05 10:00', null);
+        $penutup = app(PenutupAbsensiOtomatis::class);
+
+        // 00.30: baru 14,5 jam, masih dalam masa tunggu.
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 00:30:00')))->toBe(0);
+        expect($siang->refresh()->KeluarPada)->toBeNull();
+
+        // 04.59 lewat 5 jam dari 23.59: ditutup seperti biasa.
+        expect($penutup->TutupYangLewat(WibUtcTutup('2026-10-06 04:59:00')))->toBe(1);
+    });
+
     it('tanpa jadwal: ditutup pukul 23.59 hari masuk, jadi tidak menyambung ke hari berikutnya', function (): void {
         [, , $absensi] = SiapkanAbsensiTerbuka($this, '2026-10-05 08:00', null);
 

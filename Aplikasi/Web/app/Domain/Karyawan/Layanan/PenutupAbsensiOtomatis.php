@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\DB;
  * - **Batas** = jam selesai shift yang dimaksud absen itu pada tanggal masuk (shift yang melewati tengah malam berakhir
  *   keesokan harinya; bila ada beberapa shift sehari dipilih yang paling dekat dengan jam masuk, `PemilihShiftAbsensi`).
  *   Tanpa jadwal, atau jadwalnya sudah berakhir sebelum karyawan masuk, batasnya akhir hari kalender outlet (23.59).
- * - **Ditutup** setelah `batas + TutupOtomatisSetelahMenit` (ruang bagi yang memang lembur). Jam keluar yang dicatat adalah
+ * - **Ditutup** setelah `batas + TutupOtomatisSetelahMenit` (ruang bagi yang memang lembur), atau langsung begitu batas lewat
+ *   bila absensi itu sudah terbuka lebih dari `JAM_SHIFT_MAKSIMAL` jam (hampir pasti lupa absen pulang). Jam keluar yang dicatat adalah
  *   **batas itu sendiri**, bukan jam sistem menutupnya, jadi lama kerja tidak membengkak. Lembur yang tidak diabsen tidak
  *   dihitung.
  * - Absensi ditandai `KeluarOtomatis` dan `PerluDicek` dengan catatan, supaya pengelola bisa mengoreksi jamnya
@@ -32,6 +33,13 @@ use Illuminate\Support\Facades\DB;
 final class PenutupAbsensiOtomatis
 {
     public const BATAS_PER_PUTARAN = 500;
+
+    /**
+     * Lama terbuka paling panjang yang masih dianggap satu shift. Absensi yang sudah terbuka selama ini dan batasnya lewat
+     * ditutup tanpa menunggu masa tunggu, supaya karyawan yang masuk pagi sekali besok harinya tidak mendapati catatan
+     * kemarin masih terbuka (tombol "Absen pulang" muncul dan jam kerjanya membengkak jadi hampir 24 jam).
+     */
+    public const JAM_SHIFT_MAKSIMAL = 16;
 
     public function __construct(
         private readonly AturanKehadiranTenant $aturan,
@@ -117,8 +125,10 @@ final class PenutupAbsensiOtomatis
             $adaShiftBerikutnya = $untukAbsenMasuk && $shift !== null
                 && $jadwalHari->contains(fn (JadwalKerja $j): bool => $j->JamMulai > $shift->JamMulai);
             $habisMasaTunggu = $sekarang->greaterThanOrEqualTo($batas->addMinutes($aturan['TutupOtomatisSetelahMenit']));
+            $kelamaanTerbuka = $sekarang->greaterThanOrEqualTo($batas)
+                && CarbonImmutable::instance($absensi->MasukPada)->addHours(self::JAM_SHIFT_MAKSIMAL)->lessThanOrEqualTo($sekarang);
 
-            if (! $habisMasaTunggu && ! ($adaShiftBerikutnya && $sekarang->greaterThanOrEqualTo($batas))) {
+            if (! $habisMasaTunggu && ! $kelamaanTerbuka && ! ($adaShiftBerikutnya && $sekarang->greaterThanOrEqualTo($batas))) {
                 continue;
             }
 

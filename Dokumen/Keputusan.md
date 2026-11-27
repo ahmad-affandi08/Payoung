@@ -337,6 +337,7 @@
 | D-333 | Agent, 25/11/2026 (pemilik produk: add-on WhatsApp masih tampil padahal WhatsApp belum diatur di konsol): add-on yang membuka fitur WhatsApp disembunyikan dan tidak bisa dibeli selama WhatsApp belum aktif di konsol, sebagaimana v7.172. Melengkapi D-299. |
 | D-334 | Agent, 25/11/2026 (sisa pemindaian bug D-326/D-327, butir polling QRIS tanpa pemeriksaan jumlah): pemeriksaan jumlah QRIS berlaku di semua jalur pelunasan, bukan hanya webhook, sebagaimana v7.173. Menambah metode colokan (kompatibel, bawaan di `AdaptorDasar`), bukan mengubah `CekStatus`. Melengkapi D-313 dan D-327. |
 | D-335 | Agent, 26/11/2026 (pemilik produk memilih gaya C dari tiga mockup PNG): isian formulir memakai bayangan ke dalam (`shadow-isian`) sebagaimana v7.174. Ini pengecualian fungsional atas larangan bayangan dekoratif §17.6.11, karena bayangan itu menandai area yang bisa diisi, bukan hiasan. Elevasi panel dan kartu tetap tanpa bayangan. |
+| D-336 | Agent, 27/11/2026 (pemilik produk: 'solusi terbaik yang gak ribet'): satu aturan tambahan di penutup absensi otomatis, bukan mengembalikan masa tunggu ke 120 menit dan bukan peringatan baru di halaman, sebagaimana v7.175. Menjaga keputusan masa tunggu lembur 5 jam (v7.71) bagi yang belum 16 jam. Melengkapi D-250. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)
