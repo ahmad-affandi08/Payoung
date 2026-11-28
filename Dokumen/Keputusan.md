@@ -340,6 +340,7 @@
 | D-336 | Agent, 27/11/2026 (pemilik produk: 'solusi terbaik yang gak ribet'): satu aturan tambahan di penutup absensi otomatis, bukan mengembalikan masa tunggu ke 120 menit dan bukan peringatan baru di halaman, sebagaimana v7.175. Menjaga keputusan masa tunggu lembur 5 jam (v7.71) bagi yang belum 16 jam. Melengkapi D-250. |
 | D-337 | Agent, 28/11/2026 (pemilik produk memilih varian B halaman Absen dan meminta ilustrasi SVG): halaman Absen karyawan memakai layar gelap fokus, absen pulang dengan geser, dan ilustrasi gerai sebagaimana v7.176. Ilustrasi gerai halaman Absen menjadi pengecualian tertulis atas larangan ilustrasi dekoratif §17.6.11 (setara D-68, D-178, D-231), karena menjelaskan keadaan karyawan. Tidak membalik keputusan lain. |
 | D-338 | Agent, 28/11/2026 (pemilik produk menguji pesan dari meja): status pesanan tamu mengikuti pembayaran di kasir, kartu "Pesanan terakhir" hilang otomatis (6 jam, atau begitu dibayar/dibatalkan, ditambah tombol tutup), dan alasan QRIS tidak tersedia dijelaskan serta bisa dihidupkan dari detail outlet, sebagaimana v7.177. Tidak mengubah stok, jurnal, atau aturan harga. Tidak membalik keputusan lain. |
+| D-339 | Agent, 28/11/2026 (pemilik produk: "buatkan skrip perintahnya" setelah menilai pemasangan manual terlalu ribet): pemasangan edisi Lisensi disatukan dalam satu skrip `Alat/PasangMandiri.sh`, sebagaimana v7.170. Perubahan perilaku yang terlihat pengguna: tidak ada pada aplikasi; yang berubah hanya cara tim Payoung memasang server pembeli. |
 
 
 ### 25.2 Keputusan atas Pertanyaan Agen (v1.26, D-12)

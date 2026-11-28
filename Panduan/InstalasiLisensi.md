@@ -20,6 +20,25 @@ Paket Payoung Mandiri sudah terkunci di edisi Lisensi: isian `EDISI` di `.env` t
 pembaruan rilis, berkas tarif pajak & hari libur, dan dukungan gratis 1 tahun sejak lisensi terbit, sesudahnya lewat
 pemeliharaan tahunan (opsional). Tanpa pemeliharaan, toko tetap berjalan dengan rilis terakhir yang dimiliki.
 
+## Jalan pintas: satu perintah
+
+`Alat/PasangMandiri.sh` mengerjakan langkah 1 sampai 3 dan 5 sekaligus (periksa server & checksum, ekstrak, `.env`,
+`key:generate`, `migrate`, `storage:link`, `lisensi:pasang`, `optimize`, tautan folder web, dan cron). Skrip ini
+berdiri sendiri dan **tidak ikut di paket pembeli**, jadi kirim bersama paket dan berkas lisensi. Domain dibaca dari
+berkas lisensi, jadi tidak bisa salah ketik. Jalan lewat SSH:
+
+```
+bash PasangMandiri.sh --paket payoung-mandiri-….tar.gz --lisensi tokoanda.lisensi --tujuan ~/aplikasi \
+  --web ~/public_html --cron --db-nama NAMA_DB --db-pengguna PENGGUNA_DB
+```
+
+Kata sandi database ditanya (tersembunyi) atau dari variabel `PASANG_DB_SANDI`; data Owner ditanya oleh
+`lisensi:pasang`. Di hosting bersama awali dengan `PHP=/opt/alt/php83/usr/bin/php` (jalurnya beda-beda). Tambahkan
+`--periksa` lebih dulu untuk memeriksa syarat server dan koneksi database tanpa mengubah apa pun. Skrip menolak folder
+tujuan yang sudah berisi, database yang sudah berisi tabel, dan paket yang bukan Payoung Mandiri. Sisanya (SSL, email
+& WhatsApp, kode aktivasi kasir, cadangan) dicetak di akhir sebagai daftar tindakan. Bagian di bawah tetap berlaku
+sebagai rujukan langkah manual dan untuk pembaruan.
+
 ## 1. Pasang kode & `.env`
 
 Periksa checksum (`sha256sum -c payoung-mandiri-….tar.gz.sha256`), ekstrak paket di luar `public_html`, lalu ikuti
