@@ -41,7 +41,7 @@ dependencies:
   mobile_scanner: ^7.4.2
   # Modul Salesman bagian 2: lokasi sekali saat mulai kunjungan (izin "saat aplikasi dipakai" saja). Gagal/ditolak/
   # tidak tersedia (mis. Windows tanpa layanan lokasi) tidak pernah menahan kunjungan.
-  geolocator: ^14.1.1
+  geolocator: ^14.1.2
   # Bunyi singkat saat pembayaran tersimpan di layar Bayar (suara kasir, bukan perangkat keras printer).
   audioplayers: ^6.6.0
 
