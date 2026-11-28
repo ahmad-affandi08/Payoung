@@ -8,6 +8,7 @@ import 'package:sistem_desain/SistemDesain.dart';
 
 import '../../Aplikasi/Penyedia.dart';
 import '../../Data/BasisData/BasisDataKasir.dart';
+import '../../Domain/Penjualan/LayananPenjualan.dart';
 import '../../Domain/Penjualan/KonteksPenjualan.dart';
 import '../../Domain/Penjualan/KuotaTransaksiEfektif.dart';
 import '../../Domain/Perangkat/PenjagaLayarMenyala.dart';
@@ -44,6 +45,7 @@ import 'ItemNavigasi.dart';
 import 'LayarKunci.dart';
 import 'BannerModeLatihan.dart';
 import 'BannerPengumuman.dart';
+import 'BannerPerluTindakan.dart';
 import 'PanelKuotaTransaksiHabis.dart';
 import 'PanelWajibPembaruan.dart';
 import 'SidebarRuangKerja.dart';
@@ -771,6 +773,17 @@ class _RuangKerjaState extends ConsumerState<RuangKerja> {
               Offstage(
                 offstage: penuh,
                 child: BannerPengumuman(pengumuman: k.pengumuman),
+              ),
+            // D-340: data ditolak server selalu terlihat (kecuali saat layar Sinkron sendiri yang terbuka).
+            if (ref.watch(penyediaPerluTindakan).value case final perlu?
+                when perlu.isNotEmpty && _tujuan != TujuanRuangKerja.StatusSinkron)
+              Offstage(
+                offstage: penuh,
+                child: BannerPerluTindakan(
+                  jumlah: perlu.length,
+                  jumlahPenjualan: perlu.where((b) => b.Jenis == LayananPenjualan.jenisOutbox).length,
+                  saatLihat: () => _Buka(TujuanRuangKerja.StatusSinkron),
+                ),
               ),
             // K-23: mode latihan selalu terlihat.
             if (ref.watch(penyediaModeLatihan)) Offstage(offstage: penuh, child: const BannerModeLatihan()),

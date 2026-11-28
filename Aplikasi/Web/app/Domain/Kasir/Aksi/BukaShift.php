@@ -29,6 +29,9 @@ use Illuminate\Support\Facades\DB;
  * - BR-06.1: perangkat yang masih punya shift aktif lain ditolak (`ShiftSudahTerbuka`). Kasir yang sudah punya shift
  *   aktif di perangkat lain pada outlet yang sama (bukan shift bersama, BR-06.2) tetap diterima karena bisa terjadi
  *   saat offline, tetapi ditandai `PerluTinjauan` dan diaudit.
+ * - D-341: shift lama yang tanggal bisnisnya sudah lewat dari tanggal bisnis shift baru (kasir lupa menutup kemarin)
+ *   tidak menahan shift baru. Server menutupnya otomatis lewat `TutupShiftPaksa` (kas aktual = kas seharusnya, ditandai
+ *   `PerluTinjauan`, tercatat di audit), baik di perangkat yang sama maupun di perangkat lain.
  * - Kas awal ≥ 0; pecahan (opsional) wajib berjumlah sama dengan kas awal. Kas awal tidak dijurnal (uang hanya
  *   berpindah di dalam kas usaha, PRD v1.34).
  */
@@ -42,6 +45,7 @@ final class BukaShift
         private readonly TanggalBisnisOutlet $tanggalBisnis,
         private readonly PencatatRiwayatStatus $riwayat,
         private readonly PencatatAudit $audit,
+        private readonly TutupShiftPaksa $tutupPaksa,
     ) {}
 
     public function Jalankan(DataBukaShift $data): StatusItemSinkron
@@ -74,6 +78,8 @@ final class BukaShift
                 if ($lama !== null) {
                     return $this->BandingkanDuplikat($lama, $data, $pembuka->id);
                 }
+
+                $this->TutupShiftKedaluwarsa($data, $pembuka->id);
 
                 $aktifPerangkat = Shift::query()
                     ->where('IdPerangkat', $data->idPerangkat)
@@ -119,6 +125,39 @@ final class BukaShift
             }
 
             throw $galat;
+        }
+    }
+
+    /**
+     * D-341: tutup otomatis shift milik perangkat ini atau milik kasir yang sama (bukan shift bersama) yang tanggal
+     * bisnisnya sebelum tanggal bisnis shift baru. Shift hari yang sama tidak disentuh, jadi aturan BR-06.1 tetap
+     * berlaku untuk shift ganda yang sungguhan.
+     */
+    private function TutupShiftKedaluwarsa(DataBukaShift $data, int $idPembuka): void
+    {
+        $tanggalBaru = $this->tanggalBisnis->Hitung($data->idOutlet, $data->dibukaPada)->toDateString();
+        $kedaluwarsa = Shift::query()
+            ->where('IdOutlet', $data->idOutlet)
+            ->whereIn('Status', [StatusShift::Terbuka->value, StatusShift::DibukaUlang->value])
+            ->whereDate('TanggalBisnis', '<', $tanggalBaru)
+            ->where(function ($kueri) use ($data, $idPembuka): void {
+                $kueri->where('IdPerangkat', $data->idPerangkat)
+                    ->orWhere(function ($kasir) use ($idPembuka): void {
+                        $kasir->where('DibukaOleh', $idPembuka)->where('Bersama', false);
+                    });
+            })
+            ->orderBy('DibukaPada')
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($kedaluwarsa as $lama) {
+            $this->tutupPaksa->Jalankan(
+                $lama->Uuid,
+                $idPembuka,
+                "Ditutup otomatis: shift tanggal {$lama->TanggalBisnis->toDateString()} lupa ditutup saat shift baru dibuka. Kas dianggap sama dengan kas seharusnya, mohon dicek.",
+                null,
+                null,
+            );
         }
     }
 

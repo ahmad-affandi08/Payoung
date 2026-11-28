@@ -9,6 +9,7 @@ use App\Domain\Kasir\Aksi\TutupShiftPaksa;
 use App\Domain\Kasir\Model\Shift;
 use App\Domain\Organisasi\Enum\IzinTenant;
 use App\Domain\Organisasi\Kueri\AnggotaOutlet;
+use App\Domain\Organisasi\Kueri\TanggalBisnisOutlet;
 use App\Domain\Organisasi\Model\Perangkat;
 use App\Http\Kontroler\Kontroler;
 use App\Http\Perantara\AutentikasiPerangkat;
@@ -51,7 +52,7 @@ final class ShiftKontroler extends Kontroler
         ])->values()->all()]);
     }
 
-    public function KasirTerbuka(KasirTerbukaPermintaan $permintaan, AnggotaOutlet $anggota): JsonResponse
+    public function KasirTerbuka(KasirTerbukaPermintaan $permintaan, AnggotaOutlet $anggota, TanggalBisnisOutlet $tanggalBisnis): JsonResponse
     {
         $perangkat = AutentikasiPerangkat::AmbilPerangkat($permintaan);
         $kasir = $anggota->Cari($perangkat->IdTenant, $permintaan->string('UuidPengguna')->toString(), $perangkat->IdOutlet);
@@ -60,12 +61,15 @@ final class ShiftKontroler extends Kontroler
             return response()->json(['Shift' => []]);
         }
 
+        $tanggalSekarang = $tanggalBisnis->Hitung($perangkat->IdOutlet)->toDateString();
         $shift = Shift::query()
             ->where('IdOutlet', $perangkat->IdOutlet)
             ->where('DibukaOleh', $kasir->id)
             ->where('Bersama', false)
             ->where('IdPerangkat', '!=', $perangkat->Id)
             ->whereIn('Status', ['Terbuka', 'DibukaUlang'])
+            // D-341: shift dari hari bisnis sebelumnya (lupa ditutup) tidak menahan shift baru, server menutupnya otomatis.
+            ->whereDate('TanggalBisnis', '>=', $tanggalSekarang)
             ->orderBy('DibukaPada')
             ->get();
         $namaPerangkat = Perangkat::query()->whereIn('Id', $shift->pluck('IdPerangkat')->all())->pluck('Nama', 'Id');
